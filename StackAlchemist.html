@@ -1,0 +1,2917 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Stack Alchemist</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,700;12..96,800&family=Instrument+Sans:wght@400;500;600&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/* Layout concept: a desk. A dot-grid whiteboard for conjuring on the left, a drawer of everything
+   discovered on the right (a scrolling strip under the board on phones). The app fits one screen. */
+:root {
+  --bg: #e8ebf2;
+  --panel: #f5f6fa;
+  --raise: #ffffff;
+  --ink: #171b2c;
+  --ink2: #566079;
+  --line: #ccd2e1;
+  --dot: #b7bfd3;
+  --accent: #d6336c;
+  --accent-ink: #ffffff;
+  --badge-ink: #ffffff;
+  --px-k: #1a1d2e;
+  --px-d: #3b4256;
+  --shadow: 0 1px 0 rgba(20, 24, 40, .06), 0 8px 18px -10px rgba(20, 24, 40, .45);
+  --shadow-lift: 0 2px 0 rgba(20, 24, 40, .06), 0 18px 30px -12px rgba(20, 24, 40, .55);
+  --c-core: #5f6b85;
+  --c-lang: #2c6fd6;
+  --c-people: #c4620a;
+  --c-eng: #14806a;
+  --c-sec: #c82a43;
+  --c-tool: #7448da;
+  --c-bug: #8f6f00;
+  --c-ops: #0a7f92;
+  --c-ai: #c42a66;
+  --c-biz: #66713a;
+  --c-meta: #9a3cb8;
+  --f-display: "Bricolage Grotesque", ui-sans-serif, system-ui, sans-serif;
+  --f-body: "Instrument Sans", ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --f-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #10121b; --panel: #171a26; --raise: #212536; --ink: #e9ebf5; --ink2: #9aa3bd; --line: #2c3147; --dot: #2a2f45;
+    --accent: #ff6b9a; --accent-ink: #1b0b13; --badge-ink: #0f1119; --px-k: #04060c; --px-d: #636f8c;
+    --shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 8px 18px -8px rgba(0, 0, 0, .7);
+    --shadow-lift: 0 2px 0 rgba(0, 0, 0, .3), 0 18px 30px -10px rgba(0, 0, 0, .85);
+    --c-core: #8e9ab6; --c-lang: #62a0ff; --c-people: #ffa152; --c-eng: #43d3a6; --c-sec: #ff6b7d; --c-tool: #ab8fff;
+    --c-bug: #ebc83f; --c-ops: #40c8dc; --c-ai: #ff82b0; --c-biz: #adbc6e; --c-meta: #d581f2;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #10121b; --panel: #171a26; --raise: #212536; --ink: #e9ebf5; --ink2: #9aa3bd; --line: #2c3147; --dot: #2a2f45;
+  --accent: #ff6b9a; --accent-ink: #1b0b13; --badge-ink: #0f1119; --px-k: #04060c; --px-d: #636f8c;
+  --shadow: 0 1px 0 rgba(0, 0, 0, .3), 0 8px 18px -8px rgba(0, 0, 0, .7);
+  --shadow-lift: 0 2px 0 rgba(0, 0, 0, .3), 0 18px 30px -10px rgba(0, 0, 0, .85);
+  --c-core: #8e9ab6; --c-lang: #62a0ff; --c-people: #ffa152; --c-eng: #43d3a6; --c-sec: #ff6b7d; --c-tool: #ab8fff;
+  --c-bug: #ebc83f; --c-ops: #40c8dc; --c-ai: #ff82b0; --c-biz: #adbc6e; --c-meta: #d581f2;
+  color-scheme: dark;
+}
+
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+html, body { height: 100%; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 15px/1.4 var(--f-body);
+  padding-block: 10px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+}
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+button { font: inherit; color: inherit; }
+
+.app { height: 100%; display: grid; grid-template-rows: auto auto minmax(0, 1fr); gap: 10px; min-height: 0; }
+
+/* ---- header ---- */
+.top { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.brand { min-width: 0; }
+.brand h1 { margin: 0; font: 800 clamp(21px, 5vw, 27px)/1 var(--f-display); letter-spacing: -0.02em; text-wrap: balance; }
+.brand p { margin: 3px 0 0; font-size: 12.5px; color: var(--ink2); }
+.meter { display: flex; align-items: center; gap: 10px; font: 700 12px var(--f-mono); font-variant-numeric: tabular-nums; min-width: 0; }
+.bar { width: clamp(60px, 14vw, 140px); height: 8px; border-radius: 99px; background: var(--line); overflow: hidden; flex: none; }
+.bar > i { display: block; height: 100%; width: 0; background: var(--accent); transition: width .5s ease; }
+.rank { font: 500 12px var(--f-body); color: var(--ink2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.actions { display: flex; gap: 6px; flex-wrap: wrap; }
+.btn { font: 600 13px var(--f-body); padding: 7px 11px; border-radius: 8px; border: 1px solid var(--line); background: var(--raise); color: var(--ink); cursor: pointer; }
+.btn:hover { border-color: var(--ink2); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); }
+.btn.danger { border-color: var(--c-sec); color: var(--c-sec); }
+
+/* ---- stage ---- */
+.stage { display: grid; grid-template-columns: minmax(0, 1fr) minmax(270px, 350px); gap: 12px; min-height: 0; }
+@media (max-width: 760px) {
+  .stage { grid-template-columns: minmax(0, 1fr); grid-template-rows: minmax(0, 1fr) auto; }
+  .brand p, .rank .rk { display: none; }
+}
+@media (max-width: 520px) {
+  .btn.ico .lbl { display: none; }
+  .btn.ico { padding: 7px 9px; }
+}
+
+.board {
+  --grid: 22px;
+  --gridline: color-mix(in srgb, var(--ink2) 24%, transparent);
+  --z: 1; --ox: 0px; --oy: 0px;                       /* view zoom and pan, set from JS so the dots follow the workbench */
+  --lo: calc(11px * var(--z) - .5px - .5px * var(--z)); --hi: calc(11px * var(--z) + .5px + .5px * var(--z));
+  position: relative; isolation: isolate; min-height: 0; overflow: hidden; touch-action: none;
+  border: 1px solid var(--line); border-radius: 14px; background-color: var(--panel);
+  background-image: radial-gradient(var(--dot) max(.6px, calc(1.2px * var(--z))), transparent max(1px, calc(1.7px * var(--z))));
+  background-size: calc(var(--grid) * var(--z)) calc(var(--grid) * var(--z)); background-position: var(--ox) var(--oy); background-origin: padding-box;
+}
+/* Shift held: draw grid lines straight through the middle of every dot (dot centres sit at 11px + n*22px) */
+.board.snap {
+  background-image:
+    linear-gradient(to right, transparent var(--lo), var(--gridline) var(--lo), var(--gridline) var(--hi), transparent var(--hi)),
+    linear-gradient(to bottom, transparent var(--lo), var(--gridline) var(--lo), var(--gridline) var(--hi), transparent var(--hi)),
+    radial-gradient(var(--ink2) max(.8px, calc(1.5px * var(--z))), transparent max(1.2px, calc(2px * var(--z))));
+}
+.board.snap .on-board.drag { transform: none; }  /* no lift-scale, so the chip's edges sit exactly on the lines */
+.board.over { border-color: var(--accent); }
+.empty { position: absolute; left: 50%; top: 14px; transform: translateX(-50%); width: max-content; max-width: calc(100% - 32px); text-align: center; font: 500 13px var(--f-mono); color: var(--ink2); pointer-events: none; }
+.status { position: absolute; left: 12px; right: 270px; bottom: 10px; font: 500 12.5px/1.35 var(--f-mono); color: var(--ink2); pointer-events: none; min-height: 1.35em; }
+.status.flash { animation: flash .5s ease-out; }
+
+/* ---- chips (shared) ---- */
+.chip {
+  display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px 5px 5px; max-width: 100%;
+  background: var(--raise); border: 1px solid var(--line); border-radius: 10px;
+  font: 600 14px/1.15 var(--f-body); color: var(--ink); text-align: left;
+}
+.badge {
+  flex: none; width: 32px; height: 32px; padding: 3px; border-radius: 8px; display: grid; place-items: center;
+  background: color-mix(in srgb, var(--c) 17%, var(--raise));
+  border: 1px solid color-mix(in srgb, var(--c) 42%, var(--line));
+}
+.badge.big { width: 56px; height: 56px; padding: 6px; border-radius: 12px; }
+.badge .px { width: 100%; height: 100%; }
+.px { display: block; shape-rendering: crispEdges; overflow: visible; }
+.px .k { fill: var(--px-k); }
+.px .a { fill: var(--ic, var(--c)); }
+.px .b { fill: color-mix(in srgb, var(--ic, var(--c)) 58%, #000); }
+.px .w { fill: #ffffff; } .px .y { fill: #ffd23f; } .px .o { fill: #ff9f1c; } .px .r { fill: #ef476f; }
+.px .g { fill: #3ddc84; } .px .u { fill: #4ea8ff; } .px .p { fill: #a66cff; } .px .s { fill: #f5c9a0; }
+.px .n { fill: #9a6232; } .px .e { fill: #a8b0c2; } .px .d { fill: var(--px-d); } .px .c { fill: #35d0e0; }
+.pxi { display: inline-block; flex: none; width: 15px; height: 15px; }
+.pxi .px { width: 100%; height: 100%; }
+.nm { min-width: 0; }
+
+/* The workbench layer. Pan and zoom are one transform on this element; chips are placed in world coordinates inside it. */
+.world { position: absolute; left: 0; top: 0; width: 0; height: 0; transform-origin: 0 0; }
+.board.pannable, .board.pannable .on-board { cursor: grab; }
+.board.panning, .board.panning .on-board { cursor: grabbing; }
+.marquee { position: absolute; z-index: 90000; pointer-events: none; border: 1px solid var(--accent); border-radius: 3px; background: color-mix(in srgb, var(--accent) 14%, transparent); }
+.on-board.sel { outline: 2px solid var(--accent); outline-offset: 2px; }
+.zoombar { position: absolute; right: 10px; bottom: 10px; z-index: 90000; display: flex; align-items: center; gap: 3px; padding: 3px; background: var(--raise); border: 1px solid var(--line); border-radius: 10px; box-shadow: var(--shadow); }
+.zoombar button { min-width: 30px; height: 28px; padding: 0 8px; border: 1px solid transparent; border-radius: 7px; background: transparent; color: var(--ink); font: 700 12px var(--f-mono); cursor: pointer; touch-action: manipulation; }
+.zoombar button:hover { border-color: var(--line); background: var(--panel); }
+.zoombar button[aria-pressed="true"] { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--raise)); }
+.zoombar .sep { width: 1px; align-self: stretch; margin: 4px 2px; background: var(--line); }
+@media (max-width: 640px) { .status { right: 12px; bottom: 52px; } }
+
+/* Tiles on the workbench are a fixed 2 cells tall and a whole number of cells wide (JS rounds the width up to 22px steps). */
+.on-board { width: max-content; max-width: none; height: 44px; justify-content: center; }
+.on-board { position: absolute; z-index: 1; white-space: nowrap; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+.on-board.drag { cursor: grabbing; border-color: var(--ink2); transform: scale(1.05); }
+.on-board.target { outline: 2px dashed var(--accent); outline-offset: 3px; }
+.on-board.pop { animation: pop .38s cubic-bezier(.2, 1.3, .4, 1); }
+.on-board.shake { animation: shake .4s ease; }
+/* the tile you drag out of the drawer is sized and placed exactly like a workbench tile (JS sets left, top, width and scale) */
+.ghost { position: fixed; z-index: 150; pointer-events: none; transform-origin: 0 0; white-space: nowrap; width: max-content; max-width: none; height: 44px; justify-content: center; }
+
+/* ---- drawer ---- */
+.tray { display: flex; flex-direction: column; min-height: 0; min-width: 0; background: var(--panel); border: 1px solid var(--line); border-radius: 14px; overflow: hidden; }
+.tray.drop { border-color: var(--c-sec); box-shadow: inset 0 0 0 2px var(--c-sec); }
+.tray-tools { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; padding: 10px 10px 6px; }
+.search { width: 100%; min-width: 0; padding: 7px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--raise); color: var(--ink); font: 500 13.5px var(--f-body); }
+.search::placeholder { color: var(--ink2); }
+.filters { display: flex; gap: 6px; overflow-x: auto; padding: 0 10px 8px; scrollbar-width: none; }
+.filters::-webkit-scrollbar { display: none; }
+.fchip { flex: none; font: 700 11px var(--f-mono); padding: 4px 9px; border-radius: 99px; border: 1px solid var(--line); background: transparent; color: var(--ink2); cursor: pointer; white-space: nowrap; }
+.fchip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.items { flex: 1; min-height: 0; overflow: auto; padding: 4px 10px 12px; display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; align-content: start; }
+.items .chip { width: 100%; cursor: grab; touch-action: pan-y; position: relative; }
+.items .chip:hover { border-color: var(--ink2); }
+.items .chip.fresh::after { content: ""; position: absolute; top: -3px; right: -3px; width: 9px; height: 9px; border-radius: 50%; background: var(--accent); border: 2px solid var(--panel); }
+.items .chip.hinted { animation: pulse 1s ease-in-out 6; border-color: var(--accent); }
+.none { grid-column: 1 / -1; margin: 12px 4px; color: var(--ink2); font-size: 13px; }
+@media (max-width: 760px) {
+  .tray { max-height: 44vh; }
+  .items { grid-template-columns: none; grid-template-rows: repeat(3, auto); grid-auto-flow: column; grid-auto-columns: 172px; overflow-x: auto; overflow-y: hidden; padding-bottom: 10px; }
+  .items .chip { touch-action: pan-x; }
+  .none { grid-column: auto; }
+}
+
+/* ---- discovery card ---- */
+.found { position: absolute; left: 0; right: 0; top: 12px; display: flex; justify-content: center; padding: 0 12px; z-index: 100000; pointer-events: none; }
+.card { pointer-events: auto; width: min(430px, 100%); background: var(--raise); border: 1px solid var(--line); border-radius: 14px; padding: 14px 16px; box-shadow: var(--shadow-lift); animation: drop .35s cubic-bezier(.2, 1.2, .4, 1); cursor: pointer; display: grid; gap: 12px; }
+.found-row { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.found-row > div { min-width: 0; }
+.eyebrow { font: 700 10px var(--f-mono); letter-spacing: .09em; text-transform: uppercase; color: var(--c); }
+.fname { font: 800 22px/1.1 var(--f-display); letter-spacing: -0.01em; margin: 3px 0 4px; text-wrap: balance; }
+.fflav { font-size: 14px; color: var(--ink2); }
+.frecipe { font: 500 12px var(--f-mono); color: var(--ink2); border-top: 1px solid var(--line); padding-top: 8px; }
+.rankup { font: 700 12px var(--f-mono); color: var(--accent); }
+
+.btn { display: inline-flex; align-items: center; gap: 6px; }
+.fchip { display: inline-flex; align-items: center; gap: 5px; }
+.fchip .pxi { width: 13px; height: 13px; }
+.fchip[aria-pressed="true"] .pxi { filter: drop-shadow(0 0 0 transparent); }
+.rank { display: inline-flex; align-items: center; gap: 5px; }
+
+.subbar { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 8px 16px; }
+.tabs { display: flex; gap: 4px; }
+.tab { display: inline-flex; align-items: center; gap: 7px; padding: 6px 12px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink2); font: 600 13px var(--f-body); cursor: pointer; }
+.tab:hover { color: var(--ink); border-color: var(--ink2); }
+.tab[aria-selected="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--raise)); }
+.tab .pxi { width: 16px; height: 16px; }
+
+.tray-note { margin: 0; padding: 0 12px 8px; font: 500 12px var(--f-mono); color: var(--ink2); }
+.tray.treemode .items .chip { cursor: pointer; }
+
+/* ---- tree ---- */
+.treepane { min-height: 0; display: flex; flex-direction: column; border: 1px solid var(--line); border-radius: 14px; background-color: var(--panel); overflow: hidden; }
+.tree-bar { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; padding: 10px 12px; border-bottom: 1px solid var(--line); }
+.seg { display: flex; gap: 4px; }
+.seg button { display: inline-flex; align-items: center; gap: 6px; font: 600 12.5px var(--f-body); padding: 6px 10px; border-radius: 8px; border: 1px solid var(--line); background: transparent; color: var(--ink2); cursor: pointer; }
+.seg button[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--raise)); }
+.tree-body { flex: 1; min-height: 0; overflow: auto; padding: 14px 14px 18px; display: grid; grid-auto-rows: max-content; gap: 14px; align-content: start; }
+.tree-head { display: flex; gap: 12px; align-items: flex-start; min-width: 0; }
+.tree-head > div { min-width: 0; }
+.tree-head h3 { margin: 0; font: 800 22px/1.1 var(--f-display); letter-spacing: -0.01em; text-wrap: balance; }
+.tree-head p { margin: 4px 0 0; font-size: 13.5px; color: var(--ink2); }
+.tree-meta { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font: 600 11.5px var(--f-mono); color: var(--ink2); }
+.mini { display: inline-flex; align-items: center; gap: 6px; padding: 3px 9px 3px 3px; border-radius: 8px; border: 1px solid var(--line); background: var(--raise); color: var(--ink); font: 600 12.5px var(--f-body); cursor: pointer; }
+.mini .badge { width: 24px; height: 24px; padding: 2px; border-radius: 6px; }
+.mini.mystery { border-style: dashed; color: var(--ink2); cursor: default; }
+.tree-scroll { overflow-x: auto; padding: 4px 0 8px; }
+.tree-canvas { position: relative; margin: 0 auto; }
+.edges { position: absolute; left: 0; top: 0; pointer-events: none; }
+.edges path { fill: none; stroke: var(--ink2); stroke-width: 1.5; opacity: .5; }
+.tnode { position: absolute; width: 96px; height: 68px; display: flex; flex-direction: column; align-items: center; gap: 4px; padding: 5px 4px; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); color: var(--ink); cursor: pointer; text-align: center; font: 600 11px/1.12 var(--f-body); }
+.tnode:hover { border-color: var(--ink2); }
+.tnode .badge { width: 30px; height: 30px; padding: 2px; }
+.tnode .nm { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; width: 100%; }
+.tnode.root { border-color: var(--accent); box-shadow: 0 0 0 2px color-mix(in srgb, var(--accent) 30%, transparent); }
+.tnode.start { border-style: dashed; }
+.sect h4 { margin: 0 0 8px; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+.chiprow { display: flex; flex-wrap: wrap; gap: 6px; }
+.steps { font-size: 13px; color: var(--ink2); }
+.steps summary { cursor: pointer; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+.steps ol { margin: 8px 0 0; padding-left: 22px; display: grid; gap: 3px; }
+.steps b { color: var(--ink); font-weight: 600; }
+.tier h4 { margin: 0 0 6px; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+.tier-row { display: flex; flex-wrap: wrap; gap: 6px; }
+.tile { padding: 0; border: 0; background: transparent; cursor: pointer; border-radius: 8px; }
+.tile:hover .badge { border-color: var(--ink2); }
+.tile.mystery { display: inline-flex; align-items: center; gap: 6px; padding: 0 10px 0 4px; height: 32px; border: 1px dashed var(--line); color: var(--ink2); font: 600 11px var(--f-mono); cursor: default; }
+.tile.mystery .pxi { width: 18px; height: 18px; }
+.tier-locked { font: 500 12px var(--f-mono); color: var(--ink2); }
+
+/* ---- recipe tooltip ---- */
+.tip { position: fixed; z-index: 300; left: 0; top: 0; pointer-events: none; max-width: min(320px, calc(100vw - 16px)); padding: 10px 12px; border-radius: 10px; background: var(--raise); color: var(--ink); border: 1px solid var(--line); box-shadow: var(--shadow-lift); display: grid; gap: 7px; font: 500 12.5px/1.35 var(--f-body); }
+.t-head { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.t-head b { font: 800 14px/1.15 var(--f-display); }
+.t-cat { font: 700 10px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); white-space: nowrap; }
+.t-recipe { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font: 600 12px var(--f-body); }
+.t-recipe .ing { display: inline-flex; align-items: center; gap: 6px; }
+.t-recipe .badge { width: 24px; height: 24px; padding: 2px; border-radius: 6px; }
+.t-recipe .plus { font: 700 12px var(--f-mono); color: var(--ink2); }
+.t-flavor { color: var(--ink2); }
+
+/* ---- boxes, text tiles, tools, palette ---- */
+.boxlayer { position: absolute; left: 0; top: 0; width: 0; height: 0; }
+.note { position: absolute; }
+.note-box { border: 2px solid var(--pc); border-radius: 12px; background: color-mix(in srgb, var(--pc) 12%, transparent); pointer-events: none; }
+.note-box.sel { outline: 2px dashed var(--accent); outline-offset: 3px; }
+.note-box .grip { display: none; position: absolute; right: -7px; bottom: -7px; width: 14px; height: 14px; border-radius: 4px; background: var(--accent); border: 2px solid var(--raise); transform: scale(calc(1 / var(--z))); transform-origin: 50% 50%; }
+.note-box.sel .grip { display: block; }
+.note-text { z-index: 1; width: max-content; min-width: 66px; max-width: 528px; min-height: 44px; padding: 10px 11px; border: 1px solid color-mix(in srgb, var(--pc) 55%, var(--line)); border-radius: 10px; background: color-mix(in srgb, var(--pc) 16%, var(--raise)); color: var(--ink); font: 600 14px/22px var(--f-body); text-align: center; white-space: pre-wrap; overflow-wrap: anywhere; cursor: grab; user-select: none; -webkit-user-select: none; touch-action: none; }
+.note-text.drag { cursor: grabbing; border-color: var(--ink2); }
+.note-text.sel, .note-text.editing { outline: 2px solid var(--accent); outline-offset: 2px; }
+.note-text.editing { cursor: text; user-select: text; -webkit-user-select: text; }
+.board.tool-box, .board.tool-box .on-board, .board.tool-box .note-text { cursor: crosshair; }
+.board.tool-text, .board.tool-text .on-board { cursor: text; }
+.board.cur-move { cursor: move; }
+.board.cur-resize { cursor: nwse-resize; }
+.tools { display: flex; gap: 4px; }
+.tab[aria-pressed="true"] { color: var(--ink); border-color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, var(--raise)); }
+.palette { position: absolute; right: 10px; top: 10px; z-index: 90000; padding: 6px; background: var(--raise); border: 1px solid var(--line); border-radius: 10px; }
+.swatches { display: grid; grid-template-columns: repeat(8, 22px); gap: 4px; }
+.sw { width: 22px; height: 22px; padding: 0; border-radius: 6px; border: 2px solid transparent; background: var(--pc); cursor: pointer; touch-action: manipulation; }
+.sw:hover { transform: scale(1.1); }
+.sw[aria-pressed="true"] { border-color: var(--ink); box-shadow: inset 0 0 0 2px var(--raise); }
+.fchip .tn { display: inline-grid; place-items: center; min-width: 15px; height: 15px; border-radius: 4px; border: 1px solid currentColor; font: 700 9px var(--f-mono); }
+.filters.dragging { cursor: grabbing; }
+.filters.dragging .fchip { pointer-events: none; }
+
+/* ---- field guide ---- */
+.guide { position: fixed; inset: 0; z-index: 200; background: rgba(8, 10, 18, .6); display: grid; place-items: center; padding: 14px; }
+.sheet { width: min(760px, 100%); max-height: 100%; overflow: auto; background: var(--panel); border: 1px solid var(--line); border-radius: 16px; padding: 18px; display: grid; gap: 14px; }
+.sheet-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; }
+.sheet h2 { margin: 0; font: 800 24px/1.05 var(--f-display); letter-spacing: -0.02em; text-wrap: balance; }
+.sheet .sub { margin: 4px 0 0; font: 500 12px var(--f-mono); color: var(--ink2); }
+.gcats { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 6px; }
+.gcat { display: grid; grid-template-columns: minmax(0, 1fr) 54px auto; align-items: center; gap: 8px; padding: 7px 9px; border-radius: 8px; border: 1px solid var(--line); background: var(--raise); cursor: pointer; text-align: left; font: 600 12.5px var(--f-body); }
+.gcat[aria-pressed="true"] { border-color: var(--c); box-shadow: inset 0 0 0 1px var(--c); }
+.gbar { height: 6px; border-radius: 99px; background: var(--line); overflow: hidden; }
+.gbar > i { display: block; height: 100%; background: var(--c); }
+.gnum { font: 700 11px var(--f-mono); color: var(--ink2); font-variant-numeric: tabular-nums; }
+.glist { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px; }
+.glist li { display: flex; gap: 10px; padding: 9px; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); min-width: 0; }
+.glist li > div { min-width: 0; }
+.glist b { font-weight: 600; }
+.glist .how { display: block; font: 500 11px var(--f-mono); color: var(--ink2); margin-top: 1px; }
+.glist p { margin: 4px 0 0; font-size: 13px; color: var(--ink2); }
+.reset-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; font-size: 13px; color: var(--ink2); }
+
+@keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+@keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
+@keyframes drop { from { transform: translateY(-14px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
+@keyframes flash { from { color: var(--accent); } to { color: var(--ink2); } }
+@keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); } }
+@media (prefers-reduced-motion: reduce) {
+  .on-board.pop, .on-board.shake, .card, .items .chip.hinted, .status.flash { animation: none; }
+  .bar > i { transition: none; }
+}
+</style>
+
+<div class="app">
+  <header class="top">
+    <div class="brand">
+      <h1>Stack Alchemist</h1>
+      <p>Mix languages, humans, and bad decisions.</p>
+    </div>
+    <div class="actions">
+      <button class="btn primary" id="hint" type="button"></button>
+      <button class="btn ico" id="guideBtn" type="button" aria-label="Field guide"></button>
+      <button class="btn ico" id="clear" type="button" aria-label="Clear board"></button>
+    </div>
+  </header>
+
+  <div class="subbar">
+    <div class="tabs" role="tablist" aria-label="View">
+      <button class="tab" role="tab" id="tabBench" type="button" aria-selected="true"></button>
+      <button class="tab" role="tab" id="tabTree" type="button" aria-selected="false"></button>
+    </div>
+    <div class="tools" id="tools" role="toolbar" aria-label="Workbench tools">
+      <button class="tab tool" id="toolSelect" data-tool="select" type="button" aria-pressed="true" title="Selection (V): drag to select, drag things to move them"></button>
+      <button class="tab tool" id="toolBox" data-tool="box" type="button" aria-pressed="false" title="Box (B): drag to draw a box around things"></button>
+      <button class="tab tool" id="toolText" data-tool="text" type="button" aria-pressed="false" title="Text (T): click to add a text tile"></button>
+    </div>
+    <div class="meter" aria-label="Progress">
+      <span id="count">0 / 0</span>
+      <span class="bar"><i id="bar"></i></span>
+      <span class="rank"><span id="rankIcon"></span><span class="rk" id="rank"></span></span>
+    </div>
+  </div>
+
+  <main class="stage">
+    <section class="board" id="board" aria-label="Workbench. Drag one element onto another to combine them.">
+      <div class="empty" id="empty"></div>
+      <div class="found" id="found"></div>
+      <div class="status" id="status" role="status" aria-live="polite"></div>
+      <div class="marquee" id="marquee" hidden></div>
+      <div class="palette" id="palette" role="group" aria-label="Colour" hidden><div class="swatches" id="swatches"></div></div>
+      <div class="zoombar" id="zoombar" role="group" aria-label="Workbench view" title="Scroll to zoom. Right-drag to pan. Drag on empty space to select.">
+        <button type="button" id="zOut" aria-label="Zoom out">&minus;</button>
+        <button type="button" id="zReset" aria-label="Reset zoom to 100%">100%</button>
+        <button type="button" id="zIn" aria-label="Zoom in">+</button>
+        <button type="button" id="zFit" aria-label="Fit everything in view">Fit</button>
+      </div>
+      <div class="world" id="world"><div class="boxlayer" id="boxlayer"></div></div>
+    </section>
+
+    <section class="treepane" id="treepane" aria-label="Recipe tree" hidden>
+      <div class="tree-bar">
+        <div class="seg">
+          <button type="button" id="tmAnc" aria-pressed="true"></button>
+          <button type="button" id="tmTier" aria-pressed="false"></button>
+        </div>
+        <button class="btn" type="button" id="treeBack">Back</button>
+      </div>
+      <div class="tree-body" id="treeBody"></div>
+    </section>
+
+    <aside class="tray" id="tray" aria-label="Discovered elements">
+      <div class="tray-tools">
+        <input class="search" id="q" type="search" placeholder="Search your drawer" aria-label="Search discovered elements" autocomplete="off">
+        <button class="btn" id="sort" type="button" aria-label="Change sort order">Newest</button>
+      </div>
+      <div class="filters" id="filters"></div>
+      <p class="tray-note" id="trayNote" hidden>Tap anything to see how it was made.</p>
+      <div class="items" id="items"></div>
+    </aside>
+  </main>
+</div>
+
+<div class="guide" id="guide" hidden>
+  <div class="sheet" role="dialog" aria-modal="true" aria-labelledby="g-rank">
+    <div class="sheet-head">
+      <div>
+        <h2 id="g-rank"></h2>
+        <p class="sub" id="g-sum"></p>
+      </div>
+      <button class="btn" id="guideClose" type="button">Close</button>
+    </div>
+    <div class="gcats" id="g-cats"></div>
+    <ul class="glist" id="g-list"></ul>
+    <div class="reset-row" id="g-reset"></div>
+  </div>
+</div>
+
+<script>
+const RAW = {"starters":"human|Human|core|HU|A carbon-based unit prone to bugs, bad sleep, and strong opinions about tabs.\nkeyboard|Keyboard|core|KB|Mechanical. Loud. Your coworkers have feelings about it.\ncoffee|Coffee|core|CAF|The only dependency that has never been deprecated.\nbug|Bug|core|BUG|It's not a bug, it's an undocumented feature.\ninternet|Internet|core|WWW|Infinite knowledge, delivered right next to infinite cat videos.\nelectricity|Electricity|core|5V|Lightning in a rock. That's the whole trick.\nlogic|Logic|core|AND|Fragile when exposed to stakeholders.\nmoney|Money|core|$|Makes the roadmap move. Mostly toward whoever has it.\ntime|Time|core|t|Every estimate is off by a factor of pi.\nego|Ego|core|ME|Fuel for open-source drama and one-line commit messages.\n","data":["#core\ncode|Code|\u003c/>|Logic, typed out. Works perfectly on the machine that wrote it.|keyboard+logic\ncomputer|Computer|PC|A rock we tricked into thinking by adding lightning.|electricity+logic\ndata|Data|{ }|Mostly cat photos and one spreadsheet nobody dares rename.|computer+internet\nalgorithm|Algorithm|O(n)|Logic with a runtime complexity and a whiteboard.|logic+time\nvariable|Variable|x|A box with a name. Sometimes the name lies.|code+data\nfunction|Function|f()|Does one thing. In practice, forty-seven.|code+logic\nboolean|Boolean|T/F|Two states. Your code still found a third.|logic+variable\nif-else|If / Else|if|All of software is nested ifs wearing a trench coat.|boolean+code\nloop|Loop|for|Does the same thing again. And again. And again.|function+time\ninfinite-loop|Infinite Loop|inf|Your laptop fan has seen this movie before.|loop+loop\nrecursion|Recursion|f(f)|See: Recursion.|function+function\narray|Array|[ ]|Zero-indexed, so every argument starts with an off-by-one.|variable+variable\nstring|String|\"...\"|Text, with encoding problems you'll discover in production.|variable+keyboard\nobject|Object|obj|Data and behavior in one trench coat.|variable+function\nclass|Class|cls|An object with a superiority complex and a constructor.|object+ego\napi|API|API|A contract written by one team and interpreted by another.|function+internet\ndatabase|Database|DB|Where data goes to be queried slowly.|data+time\nserver|Server|srv|Someone else's computer, but you pay the electric bill.|computer+data\nbinary|Binary|0101|There are 10 kinds of people. You know the rest.|electricity+data\nbit|Bit|1|The smallest unit of data and the largest unit of pedantry.|binary+binary\nbyte|Byte|8b|Eight bits walk into a bar. It's a byte.|bit+bit\ncache|Cache|$$|Fast, helpful, and the reason you hard-refresh everything.|database+electricity\ncache-invalidation|Cache Invalidation|!$|One of the two hard problems. The other is naming it.|cache+time\ncompiler|Compiler|cc|Translates your code into error messages in a more formal tone.|code+computer\ninterpreter|Interpreter|>>>|A compiler that procrastinates until runtime.|compiler+time\nterminal|Terminal|$_|Where grown adults type spells at a black rectangle.|computer+keyboard\nhash|Hash|#|Turns anything into gibberish, deterministically. Like a status update.|string+algorithm\nsorting|Sorting Algorithm|sort|Bubble sort exists so you can watch an algorithm suffer.|array+algorithm\nbinary-search|Binary Search|bs|Guess the number. Halve the pain. Repeat.|array+binary\nbig-o|Big O Notation|O(?)|Describes exactly how bad it gets when the dataset grows.|algorithm+algorithm\nstack|Stack|stk|Last in, first out, like most meeting invites.|array+time\nqueue|Queue|q|First in, first out. Unlike the backlog.|array+human\n#tool\ngit|Git|git|Time travel for code, with a manual that reads like a threat.|code+time\ncommit|Commit|wip|\"fix\". Then \"fix again\". Then \"final\". Then \"final-final\".|git+keyboard\nbranch|Branch|br|A parallel universe where your bug hasn't happened yet.|git+code\nmerge-conflict|Merge Conflict|\u003c\u003c\u003c|Two developers, one line, zero chill.|branch+branch\npull-request|Pull Request|PR|A polite request to be judged by strangers.|branch+human\ncode-review|Code Review|LGTM|Fourteen nitpicks and a thumbs-up from someone who didn't open it.|pull-request+ego\nforce-push|Force Push|-f|Rewrites history. Also rewrites your teammates' week.|git+ego\nide|IDE|IDE|Gigabytes of RAM dedicated to syntax highlighting.|compiler+keyboard\nvim|Vim|:q|You can exit it. Allegedly. Someone once did.|terminal+ego\nemacs|Emacs|M-x|An operating system looking for a decent editor.|vim+lisp\nvscode|VS Code|VSC|A browser wearing an editor costume.|ide+internet\ndebugger|Debugger|dbg|Watch your own mistakes in slow motion.|ide+bug\nstackoverflow|Stack Overflow|SO|Every answer is from 2014 and every question is marked duplicate.|bug+internet\nsearch-engine|Search Engine|?|Half of engineering is typing precise questions into this.|internet+data\ncopy-paste|Copy-Paste|^C^V|The real framework. Billions of lines served.|stackoverflow+keyboard\nlibrary|Library|lib|Code somebody else wrote, tested once, and abandoned.|function+data\nframework|Framework|fw|A library that wants to run your life.|library+ego\npackage-manager|Package Manager|pkg|Downloads half the internet to pad a string.|library+internet\ndependency|Dependency|dep|A thing you needed once and will update forever.|library+time\nnode-modules|node_modules|nm|The densest object in the known universe.|dependency+dependency\nleft-pad|left-pad|lp|Eleven lines of code. One very long afternoon for the internet.|string+package-manager\nlinter|Linter|lint|Has strong feelings about your semicolons.|code+ego\nformatter|Formatter|fmt|Ends the tabs-versus-spaces war by starting a different one.|linter+string\ntabs-vs-spaces|Tabs vs Spaces|tab|A conflict older than most careers on the team.|keyboard+ego\ndocumentation|Documentation|docs|Exists. Probably wrong. Definitely stale.|function+human\nreadme|README|md|Contains the sentence \"TODO: add instructions.\"|documentation+git\ntodo-comment|TODO Comment|//TODO|Dated 2016. Still here. Still hopeful.|documentation+time\ncode-comment|Code Comment|//|Explains what the code does. The code does something else.|code+string\nopen-source|Open Source|OSS|Free as in beer, free as in \"maintainer burnout.\"|git+internet\nfork|Fork|fork|Copy it. Rename it. Start a diplomatic incident.|open-source+ego\n#bug\nnull-pointer|Null Pointer|NULL|The billion-dollar mistake, now available in every size.|variable+bug\noff-by-one|Off-by-One Error|n+1|Fence posts and fuzzy arithmetic. Always one too many or too few.|array+bug\nsegfault|Segfault|SEGV|\"Segmentation fault (core dumped).\" That's the whole message.|c+bug\nmemory-leak|Memory Leak|RAM|The process grows quietly, like a houseplant that eats servers.|object+bug\nrace-condition|Race Condition|race|Works every time, unless two things happen. Which they do.|time+bug\nheisenbug|Heisenbug|?!|Vanishes the moment you attach a debugger.|race-condition+debugger\nprint-debugging|Print Debugging|print|console.log(\"here\"). console.log(\"here 2\"). console.log(\"WHY\").|keyboard+bug\nworks-on-my-machine|Works On My Machine|ok?|Not a fix. An alibi.|computer+ego\nspaghetti-code|Spaghetti Code|~~~|Delicious until you have to untangle it at 2 a.m.|function+ego\nlegacy-code|Legacy Code|1997|Code you wrote last month, if you've since changed jobs.|spaghetti-code+time\ntechnical-debt|Technical Debt|$$$|Interest accrues at the speed of \"we'll fix it later.\"|legacy-code+money\ndead-code|Dead Code|RIP|Nobody calls it. Nobody deletes it. Nobody is brave enough.|legacy-code+function\nmagic-number|Magic Number|42|The answer to life, the universe, and one unexplained constant.|variable+ego\nhotfix|Hotfix|!!|A patch applied Friday at 4:59 p.m. What could go wrong?|commit+bug\nstack-overflow-error|Stack Overflow Error|SOE|The only legitimate use of the other Stack Overflow.|recursion+stack\nrubber-duck|Rubber Duck|duck|The cheapest senior engineer on the payroll.|debugger+human\nproduction-bug|Bug in Production|prod|Worked in staging. Staging was a lie.|bug+server\nseverity-one|Sev-1|S1|Everyone's pager has joined the chat.|production-bug+money\noutage|Outage|503|The status page says \"investigating.\" So are we.|severity-one+time\npost-mortem|Post-Mortem|PM|\"Blameless.\" Followed by forty minutes of blame.|outage+human\nroot-cause|Root Cause|RCA|It was DNS. It's always DNS.|post-mortem+logic\nbikeshedding|Bikeshedding|shed|Three hours on the variable name. Four minutes on the database.|code-review+tabs-vs-spaces\n","#people\ndev|Developer|DEV|A human who converts coffee and anxiety into pull requests.|human+code\nstudent|Student|STU|Believes the assignment is due Friday. It was due Wednesday.|human+logic\nintern|Intern|INT|Was told to \"just take a look\" at the production database.|student+money\njunior|Junior Dev|JR|Has four Stack Overflow tabs open and a dream.|intern+code\nsenior|Senior Dev|SR|Answers every question with \"it depends.\" Correctly.|dev+time\nstaff|Staff Engineer|STF|Writes documents so other people can write code.|senior+ego\nprincipal|Principal Engineer|PRN|Appears once a quarter, redirects the roadmap, vanishes.|staff+time\narchitect|Architect|ARC|Draws boxes and arrows. Never has to deploy them.|senior+logic\ncto|CTO|CTO|Chief Technical Optimist. Last committed code in 2014.|architect+money\nfounder|Founder|FND|Pivoted three times before lunch. Owns a hoodie.|human+money\nmanager|Manager|MGR|A human that converts time into meetings.|human+time\ndirector|Director|DIR|Manages managers. Technically adjacent to code.|manager+ego\nvp-eng|VP of Engineering|VPE|Reorg specialist. Says \"alignment\" with a straight face.|director+money\nceo|CEO|CEO|Sets the vision. Engineering sets the estimate. They never agree.|founder+ego\nqa|QA Engineer|QA|Finds the bug you swore couldn't happen. Then finds it again.|human+bug\nsysadmin|Sysadmin|SYS|Keeps the lights on. Has never once been thanked.|human+electricity\ndatasci|Data Scientist|DS|Spends 80% cleaning data and 20% complaining about it.|human+data\ndesigner|Designer|UX|Wants it to look exactly like the mockup. It won't.|human+css\nhacker|Hacker|HAK|Curiosity with a terminal and no respect for \"do not enter.\"|human+computer\nvibecoder|Vibe Coder|VIBE|Doesn't read the code. Doesn't need to. The vibes are green.|human+ai\n10x-engineer|10x Engineer|10x|Converts coffee into code at ten times the bug rate.|dev+coffee\nfrontend|Frontend Dev|FE|Moves a div three pixels. Calls it a sprint.|designer+dev\nbackend|Backend Dev|BE|Responsible for everything users blame on \"the website.\"|dev+database\nfullstack|Full-Stack Dev|FS|Does frontend and backend at fifty percent effectiveness each.|frontend+backend\ndevops|DevOps Engineer|OPS|A developer who got paged enough to switch teams.|dev+sysadmin\nsre|SRE|SRE|Calls outages \"incidents\" and incidents \"learning opportunities.\"|sysadmin+logic\npair-programmers|Pair Programmers|2x|Two humans, one keyboard, endless opinions.|dev+dev\ntech-lead|Tech Lead|TL|Part developer, part umpire, part meeting magnet.|senior+manager\nproduct-manager|Product Manager|PdM|Writes tickets. Reads vibes. Ships neither.|manager+data\nscrum-master|Scrum Master|SM|Facilitates the ceremony. Nobody remembers what it's for.|manager+logic\nrecruiter|Recruiter|REC|Wants ten years of experience in a three-year-old framework.|human+internet\nconsultant|Consultant|CON|Borrows your watch to tell you the time. Bills hourly.|human+ego\nfreelancer|Freelancer|FRL|Invoices at 2 a.m. Debugs at 3 a.m. Regrets at 4 a.m.|dev+money\noss-maintainer|OSS Maintainer|MNT|Runs a library used by a Fortune 500. Paid in thank-yous.|dev+open-source\nbootcamp-grad|Bootcamp Grad|BTC|Twelve weeks, nine todo apps, one dream.|student+code\nself-taught|Self-Taught Dev|ST|Learned from videos. Still can't center a div. Neither can anyone.|student+internet\nhackathon-team|Hackathon Team|HCK|Thirty-six hours, zero sleep, one demo that works exactly once.|student+coffee\nsales-engineer|Sales Engineer|SE|Promises what's on the roadmap. The roadmap is a vibe.|consultant+money\ntester-in-prod|Tester in Production|TIP|The users. They are the test suite now.|qa+production-bug\nrubber-duck-human|Duck Whisperer|DW|Explains the bug to a toy and instantly solves it. Sells the duck.|rubber-duck+ego\n#biz\nmeeting|Meeting|MTG|Could have been an email. Was a recurring email.|manager+time\nstandup|Daily Standup|SU|Fifteen minutes on the calendar. Sixty in reality.|meeting+coffee\nsprint|Sprint|SPR|A marathon with a deadline and a retrospective.|standup+loop\nretro|Retrospective|RETRO|Everyone agrees to improve. Nothing changes. Snacks help.|sprint+human\nscrum|Scrum|SCR|A ritual for measuring the speed of not finishing.|sprint+logic\njira|Jira|JRA|A ticket about a ticket about a ticket.|scrum+database\nagile|Agile|AGL|A methodology. Mostly meetings about the methodology.|sprint+code\nroadmap|Roadmap|MAP|A work of fiction in four quarters.|manager+code\nestimate|Estimate|~2d|Take the number. Double it. Move to the next unit.|time+ego\ndeadline|Deadline|DL|Whooshing noise. Approaching rapidly.|estimate+money\ncrunch|Crunch Time|CR|When \"work-life balance\" becomes a historical term.|deadline+coffee\nburnout|Burnout|0%|The warning signs were in every retro. Nobody read them.|crunch+human\nvacation|Vacation|OOO|Out of office. Phone on. Laptop on. Spirit elsewhere.|burnout+time\ntouch-grass|Touch Grass|grass|Recommended. Early reports say there's an outdoors.|vacation+human\nimposter-syndrome|Imposter Syndrome|IMP|Everyone's a fraud. Everyone can tell. (They can't.)|junior+ego\ndunning-kruger|Dunning-Kruger|DK|After one tutorial, you could absolutely rewrite the kernel.|student+ego\nstakeholder|Stakeholder|SH|Someone whose opinion arrives after the build is done.|manager+money\nrequirements|Requirements|REQ|Written in a language everyone reads and nobody understands.|stakeholder+logic\nscope-creep|Scope Creep|+1|It started as a button.|requirements+time\nfeature|Feature|FT|A bug with a marketing team.|bug+manager\nmvp|MVP|MVP|Minimum Viable Product. The \"minimum\" was aspirational.|founder+code\nstartup|Startup|S-UP|Runs on caffeine, venture capital, and a pitch deck.|mvp+money\npivot|Pivot|PIV|Sorry, we're a blockchain company now.|startup+time\nunicorn|Unicorn|1B|A mythical creature valued at a billion dollars and negative profit.|startup+internet\npitch-deck|Pitch Deck|PD|Slide seven is where the hockey stick lives.|startup+data\nipo|IPO|IPO|The day the Slack goes quiet and the Lamborghinis go loud.|unicorn+money\nacquihire|Acqui-hire|AH|You've been acquired. Your product has not.|startup+manager\nlayoffs|Layoffs|LAY|\"We're restructuring.\" There is a spreadsheet.|vp-eng+money\nreturn-to-office|Return to Office|RTO|Eight hours of commute to attend one video call.|ceo+time\nonboarding|Onboarding|ONB|Day one: laptop. Day three: access. Day thirty: first commit.|intern+manager\nopen-office|Open Office|OO|Where focus goes to die and headphones go to work.|meeting+keyboard\nremote-work|Remote Work|WFH|Pants optional. Wifi mandatory.|vacation+internet\nall-hands|All-Hands|ALL|Eight hundred people, one question, a vague answer.|meeting+ceo\nreorg|Reorg|REORG|Same people, new boxes, fresh confusion.|vp-eng+meeting\nperformance-review|Performance Review|PR|A form where \"exceeds expectations\" is statistically illegal.|manager+estimate\npromotion-packet|Promotion Packet|PP|Forty pages proving you did your job slightly beyond your job.|performance-review+senior\n","#sec\ncontract|Contract|SOW|A legal permission slip to do something very illegal, but nicely.|money+logic\npentester|Pentester|PEN|Paid to break in politely. Leaves a PDF instead of a ransom note.|hacker+contract\nthreatactor|Threat Actor|TA|A person with a keyboard, a grudge, and a surprisingly good CI pipeline.|hacker+money\nscript-kiddie|Script Kiddie|SK|Runs tools they don't understand against things they shouldn't.|hacker+intern\nwhite-hat|White Hat|WH|Hacks for good. Insists on being called \"ethical.\"|hacker+logic\nblack-hat|Black Hat|BH|Hacks for money. Insists on nothing.|hacker+ego\ngrey-hat|Grey Hat|GH|Found a hole, emailed the company, received a lawyer.|white-hat+black-hat\nbug-bounty-hunter|Bug Bounty Hunter|BBH|Works for free until it pays. Then complains about triage.|hacker+bug\nbug-bounty|Bug Bounty|BB|\"Duplicate.\" \"Informational.\" \"Won't fix.\" And occasionally, rent.|bug-bounty-hunter+money\nred-team|Red Team|RED|Gets paid to be the villain. Brings snacks.|pentester+ego\nblue-team|Blue Team|BLU|Gets paid to catch the villain. Brings logs.|sysadmin+hacker\npurple-team|Purple Team|PRP|Red and Blue finally in one room. It's awkward.|red-team+blue-team\nexploit|Exploit|0day|A bug with a business plan.|bug+threatactor\nzero-day|Zero-Day|0d|Nobody knows about it. Everybody will pay for it.|exploit+time\nvulnerability|Vulnerability|vuln|A bug that gets a logo and a cute name.|bug+logic\ncve|CVE|CVE|A bug with a serial number and a conference talk.|vulnerability+database\ncvss|CVSS Score|9.8|Critical. As is every score, until triaged.|cve+estimate\npatch|Patch|patch|Applied after the breach. Occasionally before.|vulnerability+code\npatch-tuesday|Patch Tuesday|PT|The monthly ritual of fixing bugs and discovering new ones.|patch+time\nphishing|Phishing|PHSH|Hello, this is the CEO. Please buy gift cards.|internet+intern\nspear-phishing|Spear Phishing|SPH|Phishing, but they read your LinkedIn first.|phishing+data\nsocial-engineering|Social Engineering|SEng|Hacking the one OS with no patches: the human.|human+hacker\ncaptcha|CAPTCHA|CAPT|Prove you're human by identifying a fire hydrant. Is the pole part of it?|human+password\npassword|Password|***|Hunter2. Or Password1!. Or the dog's name plus an exclamation mark.|keyboard+string\npassword-reuse|Password Reuse|PW|One breach, forty accounts. The domino effect.|password+time\npassword-manager|Password Manager|PM|One password to remember. Which you will forget.|password+database\ntwo-factor|Two-Factor Auth|2FA|Your phone is now also the problem.|password+computer\nmfa-fatigue|MFA Fatigue|MFAF|Fifty push notifications at 3 a.m. Someone taps \"approve.\"|two-factor+threatactor\ncredential-stuffing|Credential Stuffing|CS|Try every leaked password everywhere. Works more than you'd hope.|password-reuse+threatactor\nbrute-force|Brute Force|BF|Try every key. Eventually, one fits.|password+loop\nrainbow-table|Rainbow Table|RT|A table of hashes. Not magical. Very unfair.|hash+password\nencryption|Encryption|ENC|Math so strong even you forgot the key.|algorithm+password\npublic-key|Public Key|PUB|Share with everyone. Somehow that's the secure part.|encryption+internet\nprivate-key|Private Key|PRIV|Do not share. Do not commit. Do not email yourself.|encryption+ego\nleaked-secret|Leaked Secret|LEAK|The API key was in the first commit. It's been there for years.|private-key+commit\ntls-cert|TLS Certificate|TLS|The padlock. Expires at 3 a.m. on a holiday.|public-key+time\nfirewall|Firewall|FW|Stops attackers. And the intern from reaching staging.|server+logic\nvpn|VPN|VPN|Pretends to be somewhere else. Like the CEO at all-hands.|firewall+internet\ndmz|DMZ|DMZ|A neutral zone between the internet and your inner peace.|firewall+server\nwaf|WAF|WAF|Blocks bad requests. Also your legitimate checkout.|firewall+code\nzero-trust|Zero Trust|0T|Trust no one. Especially your own VPN.|firewall+ego\nids|Intrusion Detection|IDS|Raises alarms. Most are the sysadmin.|firewall+hacker\nsiem|SIEM|SIEM|A billion logs. Three alerts. All false.|ids+database\nsoc-analyst|SOC Analyst|SOC|Sits in the dark, watches green text scroll, loves it.|sysadmin+siem\nincident-response|Incident Response|IR|\"Don't touch anything.\" Everyone touches everything.|soc-analyst+outage\nhoneypot|Honeypot|POT|A fake server built to attract attackers. Mostly attracts QA.|server+hacker\nsql-injection|SQL Injection|' OR 1|Little Bobby Tables is now a CISO.|sql+exploit\nxss|Cross-Site Scripting|XSS|You posted a comment. It posted you.|javascript+exploit\nbuffer-overflow|Buffer Overflow|BOF|The classic. Mostly C's fault. Always a surprise.|c+exploit\nrce|Remote Code Execution|RCE|\"Hello, world\" from someone else's machine.|exploit+internet\nprivilege-escalation|Privilege Escalation|PE|Intern to root in four easy steps.|exploit+intern\nsupply-chain-attack|Supply Chain Attack|SCA|You trusted a package. The package trusted a stranger.|dependency+threatactor\ntyposquatting|Typosquatting|TYPO|npm install reqeusts. Welcome to hell.|package-manager+threatactor\nmalware|Malware|MAL|Software with ambitions.|code+threatactor\nransomware|Ransomware|RAN|Pay in crypto. Get a tutorial in crypto.|malware+money\nransomware-gang|Ransomware Gang|RG|Has a customer support portal. Better than yours.|ransomware+ego\nbotnet|Botnet|BOT|Your smart fridge is now part of something bigger.|malware+internet\nddos|DDoS|DDoS|A thousand toasters ask for the same webpage at once.|botnet+server\ntrojan|Trojan|TRJ|Looks like a PDF. Behaves like a landlord.|malware+human\nspyware|Spyware|SPY|Watches everything. Reports to nobody useful.|malware+data\nkeylogger|Keylogger|KLG|Knows what you typed. Including that message.|spyware+keyboard\nrootkit|Rootkit|RK|Hides forever. Technically a roommate.|malware+computer\nbackdoor|Backdoor|BD|A secret entrance. Rarely stays secret.|malware+time\napt|APT|APT|Advanced Persistent Threat: the long con with a budget.|threatactor+time\nnation-state|Nation-State Actor|NSA|Budget: infinite. Patience: infinite. Sense of humor: classified.|apt+money\ninsider-threat|Insider Threat|INS|Badge access, a grudge, and a Friday afternoon.|threatactor+human\ndark-web|Dark Web|DW|Where stolen logins go on sale. Reviews: five stars.|internet+threatactor\ndata-breach|Data Breach|BRCH|\"We take your privacy seriously.\" Sorry. Again.|database+threatactor\nbreach-notice|Breach Notification|BN|A \"we value your privacy\" email, sent six months late.|data-breach+time\nsecurity-theater|Security Theater|SecT|Passwords need a haiku and a hieroglyph. Also, they expire monthly.|password+manager\ncompliance|Compliance|SOC2|The art of proving you do the thing, ideally by doing the thing.|security-theater+logic\nciso|CISO|CISO|Blamed when something happens. Blamed when nothing happens.|security-theater+director\npentest-report|Pen Test Report|PDF|Forty pages. Four findings. One screenshot of calc.exe.|pentester+documentation\nctf|CTF|CTF|A game where hackers compete to do hacker things legally.|hacker+hackathon-team\n","#ops\ncloud|Cloud|CLD|Someone else's computer, rebranded.|server+internet\ncontainer|Container|CTR|A tiny computer in a trench coat.|server+data\ndocker|Docker|DCK|Works on my machine, so we shipped the machine.|container+code\nkubernetes|Kubernetes|K8s|You wanted a deployment. You got a career.|docker+docker\npod|Pod|pod|The smallest unit of Kubernetes, and still too big to debug.|kubernetes+container\nhelm-chart|Helm Chart|HELM|YAML wrapped in YAML, deployed through YAML.|kubernetes+yaml\naws|AWS|AWS|Two hundred services. You'll use four. The bill covers all of them.|cloud+money\nazure|Azure|AZ|Where the enterprise goes to nap, in a very secure way.|cloud+csharp\ngcp|Google Cloud|GCP|Technically superb. Emotionally, you worry it'll be shut down.|cloud+go\ncloud-bill|Cloud Bill|$$$$|Nobody can explain the line item \"misc: $48,000.\"|aws+time\nserverless|Serverless|λ|There are servers. You just can't see them or fix them.|cloud+function\nterraform|Terraform|TF|Infrastructure as code. Also infrastructure as a cry for help.|cloud+code\nci-cd|CI/CD Pipeline|CI|Green on Monday. Red for no reason Tuesday. Green on retry.|git+server\ngithub|GitHub|GH|Where code goes to be starred and never read.|pull-request+internet\ndeploy|Deploy|dpl|The moment between \"it works\" and \"it works for ten users.\"|ci-cd+server\nrollback|Rollback|^Z|The only undo button that matters.|deploy+time\nfriday-deploy|Friday Deploy|FRI|A brave act. Possibly a cry for help.|deploy+ego\nblue-green|Blue-Green Deploy|B/G|Two production environments. One fewer than you needed.|deploy+logic\ncanary|Canary Release|CAN|Sacrifice one percent of users so the rest stay happy.|deploy+bug\nfeature-flag|Feature Flag|FLG|An if-statement with a management dashboard.|feature+if-else\nchaos-monkey|Chaos Monkey|CHAOS|Randomly kills servers to see if you notice. You notice.|outage+deploy\nmonitoring|Monitoring|MON|Notifies you about things that are already on fire.|server+human\nlogging|Logging|LOG|Millions of lines. Zero explaining why.|server+string\nobservability|Observability|O11y|Monitoring, with a vendor invoice.|monitoring+logging\nalert-fatigue|Alert Fatigue|!!!|Pager goes off. You mute the pager. Pager goes off again.|monitoring+burnout\non-call|On-Call|PGR|Sleep is optional. The pager is not.|sre+time\nload-balancer|Load Balancer|LB|Distributes your problem equally.|server+server\ndns|DNS|DNS|It's always DNS. Also the haiku about DNS is correct.|internet+database\ncdn|CDN|CDN|Cached copies of your site, everywhere. Including the old one.|cache+dns\nlatency|Latency|ms|Light is slow. Your code is slower.|internet+time\nmicroservices|Microservices|uS|One monolith became forty tiny monoliths, each one down.|api+server\nmonolith|Monolith|mono|One repo. One deploy. One crying engineer.|backend+code\nservice-mesh|Service Mesh|mesh|Solves problems you didn't have by creating ones you will.|microservices+kubernetes\nevent-bus|Event Bus|bus|Everyone publishes. Nobody subscribes. Messages age quietly.|queue+api\nkafka|Kafka|KFK|A bus that never stops. Neither does the on-call rotation.|event-bus+data\nredis|Redis|RDS|The cache that wants to be your database.|cache+database\nnosql|NoSQL|N-SQL|Pronounced \"no, sequel.\" Schemaless until the schema arrives.|database+ego\nstatus-page|Status Page|OK|All systems operational. Except the one you're using.|outage+internet\nsla|SLA|99.9|Three nines is 8.76 hours of \"it's fine.\"|contract+server\nuptime|Uptime|UP|The number of nines you can afford.|sla+time\nbackup|Backup|BAK|Doesn't exist until you need it. Then it's corrupted.|database+server\ndisaster-recovery|Disaster Recovery|DR|The plan nobody tested. Until now. Live.|backup+outage\ntech-support|Tech Support|TS|Have you tried turning it off and on again?|sysadmin+human\nturn-it-off-and-on|Turn It Off and On Again|IT|The most successful fix in computing history.|tech-support+electricity\ncron|Cron Job|cron|Runs at 3 a.m. and fails at 3:01. You're asleep.|time+server\nshell-script|Shell Script|.sh|Fifty lines of automation holding up a billion-dollar company.|bash+function\nlinux|Linux|TUX|Free as in freedom. Also free as in \"good luck with Wi-Fi.\"|terminal+open-source\nsudo|sudo|sudo|With great power comes great responsibility. Or a typo.|linux+ego\nrm-rf|rm -rf /|rm|The last command you'll ever run on that server.|sudo+bug\nwindows|Windows|WIN|Please wait while Windows prepares to prepare.|computer+money\nmacos|macOS|MAC|Beautiful. Expensive. Opinionated about ports.|windows+ego\n#ai\nai|AI|AI|Statistics with a larger marketing budget.|data+algorithm\nmachine-learning|Machine Learning|ML|Linear regression wearing a trench coat.|ai+data\nneural-net|Neural Network|NN|Layers of math pretending to be a brain. Neurons not included.|machine-learning+logic\ngradient-descent|Gradient Descent|grad|Walk downhill until you reach a local minimum, then declare victory.|machine-learning+algorithm\noverfitting|Overfitting|OVR|Perfect on training data. Terrible at life.|machine-learning+ego\nllm|LLM|LLM|Predicts the next token. Also writes a poem about tokens.|neural-net+internet\ngpu|GPU|GPU|Where the electricity and the budget both went.|computer+electricity\nprompt|Prompt|\">\"|The new source code. Phrase it politely.|llm+keyboard\nprompt-engineer|Prompt Engineer|PE|Whispers instructions to a model. The model hallucinates anyway.|human+prompt\nhallucination|Hallucination|HAL|Confident. Eloquent. Completely made up.|llm+bug\ncontext-window|Context Window|CTX|Fits an entire novel. Still forgets your name.|llm+time\nfine-tuning|Fine-Tuning|FT|Teaching a model your problems at scale.|llm+data\ntraining-data|Training Data|TD|Scraped. Cleaned. Legal? We'll ask somebody later.|data+ego\nrag|RAG|RAG|Retrieval-augmented guessing. Now with citations.|llm+database\nvector-db|Vector Database|VDB|Has no idea what you mean, but finds something close.|database+machine-learning\nembeddings|Embeddings|EMB|Turns words into coordinates. Turns meaning into soup.|machine-learning+string\nai-agent|AI Agent|AGT|A model with tools and a to-do list. What could go wrong?|llm+function\nagent-loop|Agent Loop|loop|Plan. Act. Observe. Burn tokens. Repeat.|ai-agent+loop\ncopilot|Copilot|CPL|Autocomplete with confidence. Sometimes correct.|llm+ide\nvibe-coding|Vibe Coding|VIBE|Ship by feel. Debug by prayer.|vibecoder+prompt\nai-generated-code|AI-Generated Code|AIC|Compiles. Passes. Does something adjacent to the request.|copilot+code\nai-slop|AI Slop|SLOP|Fifty pull requests nobody asked for.|ai-generated-code+pull-request\nai-code-review|AI Code Review|AICR|\"Looks great! Also, consider rewriting everything.\"|copilot+code-review\nagi|AGI|AGI|Always five years away. Currently six.|ai+time\nai-safety|AI Safety|SAFE|Guardrails. And people arguing about the guardrails.|ai+logic\nalignment|Alignment|ALN|Teaching AI to want what you want. Harder than getting your team to.|ai-safety+human\nprompt-injection|Prompt Injection|PI|\"Ignore previous instructions.\" Works on both people and software.|prompt+exploit\njailbreak|Jailbreak|JB|The model said no. Several paragraphs later, it said yes.|prompt-injection+ego\nai-bubble|AI Bubble|BUBL|Valued as though it had already cured everything.|ai+money\nml-ops|MLOps|MLO|DevOps for models. Models are pickier than servers.|machine-learning+devops\nnotebook|Jupyter Notebook|NB|Cell 47 depends on cell 12. Which you deleted.|python+data\n","#lang\npython|Python|Py|Indentation is syntax. Whitespace is a lifestyle.|code+bug\njavascript|JavaScript|JS|An empty array plus an empty object is a personality test.|code+internet\njava|Java|Jv|Write once, run anywhere, wait for the JVM to warm up.|code+coffee\nc|C|C|Pointers: a feature, a threat, a rite of passage.|code+electricity\ncpp|C++|C++|C plus a thousand things nobody asked for.|c+ego\nrust|Rust|Rs|Memory safety, guaranteed. The compiler is a great therapist, but cold.|c+time\ngo|Go|Go|if err != nil. if err != nil. if err != nil.|c+internet\ntypescript|TypeScript|TS|JavaScript after therapy. Boundaries set, mostly \"any.\"|javascript+logic\nphp|PHP|PHP|Still runs a surprising chunk of the internet. Refuses to leave.|javascript+time\nruby|Ruby|Rb|Optimized for developer happiness, not for runtime.|python+ego\nswift|Swift|Sw|Fast, safe, and exclusively where Apple allows it.|c+money\nkotlin|Kotlin|Kt|Java after a self-care retreat.|java+logic\ncsharp|C#|C#|Java's talented cousin who moved to Redmond.|java+money\nsql|SQL|SQL|SELECT * FROM problems WHERE solved = false.|data+logic\nbash|Bash|sh|A language where a missing space can delete the filesystem.|terminal+code\nhaskell|Haskell|Hs|Pure functions. Pure monads. Pure judgment of your imperative code.|logic+ego\nlisp|Lisp|( )|Parentheses all the way down. Nobody ever finds the closing one.|code+code\nassembly|Assembly|asm|Every line is a conversation with the CPU, and the CPU isn't chatty.|electricity+c\nhtml|HTML|HTML|Not a programming language. Please don't @ me.|internet+keyboard\ncss|CSS|CSS|Centering a div is the final exam.|html+ego\nperl|Perl|Pl|Write once. Read never.|bash+time\ncobol|COBOL|COB|Older than most of its maintainers. Powers every bank anyway.|time+money\nyaml|YAML|yml|JSON that went to art school and kept the indentation.|json+ego\njson|JSON|JSON|Curly braces, no trailing commas, ongoing arguments.|data+javascript\nxml|XML|XML|Angle brackets for people who found curly braces too casual.|html+data\nregex|Regex|.*|Now you have two problems.|string+logic\nexcel|Excel|XLS|The most-used programming language on Earth, used badly.|data+money\nmarkdown|Markdown|MD|HTML for people who like pound signs.|html+string\n#tool\nnodejs|Node.js|node|JavaScript, but now it can crash your server too.|javascript+server\nnpm|npm|npm|Installing one package installs a small town.|nodejs+package-manager\nreact|React|RCT|Rerenders when you look at it. Rerenders when you don't.|javascript+library\nangular|Angular|NG|Enterprise-ready. Enterprise-sized. Enterprise-patient.|typescript+framework\nvue|Vue|Vue|The friendly framework. Until the version migration.|html+framework\njquery|jQuery|$()|Still on half the internet. Refuses to be sunset.|javascript+copy-paste\nwebpack|Webpack|WP|Bundles 40 MB of JavaScript to show one button.|javascript+package-manager\nnextjs|Next.js|NXT|React with a server and a hosting bill.|react+server\njs-fatigue|JS Fatigue|JSF|A new framework every week. Your resume expects all of them.|react+angular\ntailwind|Tailwind|TW|Class names the length of a novel. Surprisingly lovely.|css+framework\nbootstrap|Bootstrap|BS|Every site looks the same, and it's fine.|css+library\ndjango|Django|DJG|Batteries included. The batteries are from 2008.|python+framework\nflask|Flask|FLK|A microframework with macro opinions.|python+library\npandas|pandas|PD|Not the animal. Often the problem.|python+array\nnumpy|NumPy|NP|Vectorize everything or perish slowly.|python+algorithm\nrails|Rails|RoR|Convention over configuration. And over performance.|ruby+framework\nspring|Spring Boot|SB|A thousand annotations. Zero idea what got wired.|java+framework\nlaravel|Laravel|LRV|PHP, but with a nice logo.|php+framework\ndotnet|.NET|NET|Fourteen versions, each almost compatible with the last.|csharp+framework\ncargo|Cargo|CRG|Download. Compile. Wait. Download. Compile.|rust+package-manager\ngoroutine|Goroutine|GR|Cheap threads for expensive mistakes.|go+function\nborrow-checker|Borrow Checker|BC|The compiler hates you. For your own good.|rust+logic\nunsafe-block|unsafe|unsafe|A keyword that means \"trust me.\" The compiler does not.|rust+ego\nmonad|Monad|M|A monoid in the category of endofunctors. What's the problem?|haskell+function\nlambda|Lambda|λ|An anonymous function with a famous name.|lisp+function\nparentheses|Parentheses|(((|Ends with )))))))))).|lisp+string\nandroid|Android Dev|AND|Supports thirty OS versions. Nobody thanks them.|kotlin+computer\nios-dev|iOS Dev|iOS|Fights Xcode, then the review team, then Xcode again.|swift+computer\nkernel|Kernel|OS|Where all your problems live. Underneath.|c+assembly\ndriver|Driver|DRV|Written by one tired person in 2003.|kernel+human\nfirmware|Firmware|FW|Works fine. Don't ask how it updates.|kernel+electricity\ncython|Cython|Cy|Python's speed boost, C's headaches.|python+c\njvm|JVM|JVM|A tiny OS for one language and its XML.|java+computer\ngarbage-collector|Garbage Collector|GC|Takes out the trash. Pauses the house first.|java+memory-leak\nheader-file|Header File|.h|Declares everything. Defines nothing. Included twelve times.|c+library\nstored-proc|Stored Procedure|SP|Business logic hiding in the database, laughing.|sql+function\ndb-index|Index|idx|Makes reads fast, writes slow, and DBAs smug.|sql+algorithm\nsql-join|JOIN|JOIN|Intended: ten rows. Received: a Cartesian explosion.|sql+array\nhello-world|Hello, World!|Hi|Every journey starts with a print statement.|print-debugging+string\nfunctional-programmer|Functional Programmer|FP|Has never mutated anything. Variables included.|haskell+lisp\nconfused-recruiter|Confused Recruiter|?JS|JavaScript is not Java. Java is not JavaScript. Neither is coffee.|javascript+java\nno-code|No-Code Tool|NC|Write code visually. Debug it in the dark.|designer+code\nlow-code|Low-Code|LC|Same as code, with fewer keyboards and more invoices.|no-code+money\n#bug\nundefined|undefined|undef|Not a function. Not an object. Not a drill.|javascript+bug\nnan|NaN|NaN|Not a Number. Not equal to itself, either.|javascript+variable\ncallback-hell|Callback Hell|CB|The pyramid of doom, now with indentation.|javascript+function\nasync-await|async / await|async|Promises, promises.|callback-hell+time\nindentation-error|IndentationError|IE|Unexpected indent. Hours of life: gone.|python+tabs-vs-spaces\ngil|GIL|GIL|Python has threads. Just not at the same time.|python+race-condition\ntype-hints|Type Hints|TH|Suggestions the interpreter politely ignores.|python+typescript\nany-type|any|any|The type system's emergency exit.|typescript+ego\nmonkey-patch|Monkey Patch|MP|Fixed it at runtime. Now it's everyone's problem.|ruby+hotfix\nnull-safety|Null Safety|N?|A question mark that gives your nulls a seatbelt.|kotlin+null-pointer\npointer|Pointer|*p|Points to something. Maybe memory. Maybe your demise.|c+variable\nsemicolon|Semicolon|;|One is missing. It's somewhere. It's always somewhere.|c+string\nundefined-behavior|Undefined Behavior|UB|The compiler may do anything, including format your drive.|cpp+bug\ntemplate-hell|Template Metaprogramming|TMP|A compile error in the shape of a novel.|cpp+function\ndrop-table|DROP TABLE|DROP|The test that ran against production.|sql+bug\nregex-hell|Regex From Hell|RH|Four hundred characters nobody can read, including its author.|regex+code\ncenter-a-div|Center a Div|div|The final boss of frontend. Don't ask how.|css+time\nimportant|!important|!imp|Specificity wars end with a nuclear option.|css+function\ndiv-soup|Div Soup|div|Eleven nested divs. One button.|html+loop\nz-index|z-index: 9999|z|When in doubt, add a zero.|css+ego\ngit-blame|Git Blame|blm|Reveals the culprit. It was you, three years ago.|git+code-review\nstack-trace|Stack Trace|trace|Forty lines of Java. The error is in line one.|stack+bug\nrewrite-in-rust|Rewrite It in Rust|RIIR|Every project's destiny, says a very polite mob.|rust+legacy-code\n#meta\ntechnical-interview|Technical Interview|TI|Reverse a linked list on a whiteboard. For a CSS job.|recruiter+algorithm\nleetcode|LeetCode|LC|Where cold applications go to meet hard problems.|technical-interview+sorting\nsystem-design|System Design|SD|Draw one load balancer. Say \"scalable.\" Nod.|architect+load-balancer\nwhiteboard|Whiteboard|WB|A surface for confident handwriting and quiet panic.|technical-interview+architect\neaster-egg|Easter Egg|EGG|A hidden joke in the code. Including this page.|feature+code-comment\nit-works-dont-touch|It Works, Don't Touch It|DNT|The first law of production.|legacy-code+uptime\nship-it|Ship It|SHIP|The squirrel emoji is implied.|deploy+money\ndefinition-of-done|Definition of Done|DONE|Done. Done-done. Done-done-done. Actually done?|jira+deadline\nsilver-bullet|Silver Bullet|AG|There is no silver bullet. Yet the shopping continues.|ai+deadline\ngreenfield|Greenfield Project|GRN|A beautiful blank repo. Legacy in six months.|requirements+touch-grass\nmythical-engineer|Mythical Engineer|MYTH|Knows Rust, Haskell, CSS, and how to talk to humans. Does not exist.|10x-engineer+touch-grass\nblockchain|Blockchain|BC|A database nobody asked for, with a billion fans.|database+money\nsmart-contract|Smart Contract|SC|Code is law. The law has a bug.|blockchain+contract\ncrypto-bro|Crypto Bro|BRO|Has a Discord, a vision, and strong opinions about gas fees.|blockchain+human\nnft|NFT|NFT|A receipt for a link to a picture.|blockchain+string\nquantum-computer|Quantum Computer|QC|Both on and off until observed by a manager.|computer+time\nquantum-supremacy|Quantum Supremacy|QS|Solved a problem nobody has, in no time at all.|quantum-computer+algorithm\nskynet|Skynet|SKY|It started as a cron job.|agi+cron\n"]};
+/* ---------- World: categories, parsing, generated language x role combos ---------- */
+const CATS = [
+  { id: 'core',   name: 'Fundamentals' },
+  { id: 'lang',   name: 'Languages' },
+  { id: 'people', name: 'People' },
+  { id: 'eng',    name: 'Engineers' },
+  { id: 'sec',    name: 'Security' },
+  { id: 'tool',   name: 'Tools' },
+  { id: 'bug',    name: 'Bugs' },
+  { id: 'ops',    name: 'Ops' },
+  { id: 'ai',     name: 'AI' },
+  { id: 'biz',    name: 'Corporate' },
+  { id: 'meta',   name: 'Meta' }
+];
+
+const LANGS = {
+  python:     { n: 'Python',     s: 'Py',  pm: 'pip and a virtualenv nobody activated',     pain: 'whitespace that matters',                    fan: 'says it reads like English while debugging indentation' },
+  javascript: { n: 'JavaScript', s: 'JS',  pm: 'npm and 1,400 transitive dependencies',     pain: '"undefined is not a function"',              fan: "will tell you there's a new framework this week" },
+  typescript: { n: 'TypeScript', s: 'TS',  pm: 'npm and a tsconfig of unknown origin',      pain: 'an "any" that spread like mold',             fan: 'is certain types would have prevented this' },
+  java:       { n: 'Java',       s: 'Jv',  pm: 'Maven and an XML file the size of a novel', pain: 'a NullPointerException with no message',     fan: 'insists on a factory for the factory' },
+  c:          { n: 'C',          s: 'C',   pm: 'a Makefile from 1994',                      pain: 'a segfault with no stack trace',             fan: 'says "it\'s just pointers" while sweating' },
+  cpp:        { n: 'C++',        s: 'C++', pm: 'CMake, a language of its own',              pain: 'a template error forty screens long',        fan: 'knows seven ways to initialize an int and picks the wrong one' },
+  rust:       { n: 'Rust',       s: 'Rs',  pm: 'Cargo, which actually works',               pain: 'the borrow checker',                         fan: 'will mention Rust within thirty seconds of meeting you' },
+  go:         { n: 'Go',         s: 'Go',  pm: 'go mod and nothing else',                   pain: 'the fortieth "if err != nil"',               fan: 'prefers a for loop and silence' },
+  php:        { n: 'PHP',        s: 'PHP', pm: 'Composer, and a lot of it',                 pain: 'an argument order that changes by mood',     fan: 'insists PHP is fine, actually' },
+  ruby:       { n: 'Ruby',       s: 'Rb',  pm: 'Bundler and a Gemfile.lock disagreement',   pain: 'a monkey patch from 2013',                   fan: 'values developer happiness over CPU time' },
+  swift:      { n: 'Swift',      s: 'Sw',  pm: 'Xcode and Swift Package Manager, a rocky marriage', pain: 'a compiler that says "expression too complex"', fan: 'ships only where Apple permits' },
+  kotlin:     { n: 'Kotlin',     s: 'Kt',  pm: 'Gradle, a career of its own',               pain: 'a Gradle sync that never ends',              fan: 'announces it is basically Java, but nicer' },
+  csharp:     { n: 'C#',         s: 'C#',  pm: 'NuGet and a .csproj that edits itself',     pain: 'an async method that deadlocks politely',    fan: 'has opinions about LINQ and Microsoft in equal measure' },
+  sql:        { n: 'SQL',        s: 'SQL', pm: 'a migration tool and prayer',               pain: 'a missing WHERE clause',                     fan: 'thinks everything is a join' },
+  bash:       { n: 'Bash',       s: 'sh',  pm: 'apt, curl, and trust',                      pain: 'a space in a filename',                      fan: "writes scripts they can't read next week" },
+  haskell:    { n: 'Haskell',    s: 'Hs',  pm: 'Cabal and Stack, which differ for reasons', pain: 'a type error that reads like philosophy',    fan: 'will explain monads at lunch, unprompted' },
+  lisp:       { n: 'Lisp',       s: '( )', pm: 'Quicklisp and a cup of tea',                pain: 'one missing parenthesis, location unknown',  fan: 'says code is data and is not joking' },
+  assembly:   { n: 'Assembly',   s: 'asm', pm: 'a chip vendor manual',                      pain: 'a register that was already in use',         fan: 'counts clock cycles in their sleep' },
+  perl:       { n: 'Perl',       s: 'Pl',  pm: 'CPAN, an archive from a golden age',        pain: 'a regex no human has ever read',             fan: 'swears there is more than one way to do it, and uses all of them' },
+  cobol:      { n: 'COBOL',      s: 'COB', pm: 'a mainframe and a very old binder',         pain: 'a column rule from punched-card days',       fan: 'is somehow both retired and on call' },
+  html:       { n: 'HTML',       s: 'HTML',pm: 'a CDN link and good intentions',            pain: 'a div inside a span inside a mystery',       fan: 'insists HTML is, in fact, a programming language' },
+  css:        { n: 'CSS',        s: 'CSS', pm: 'a utility framework and hope',              pain: 'a z-index war',                              fan: 'has Opinions about centering' }
+};
+
+const cap = s => s.charAt(0).toUpperCase() + s.slice(1);
+
+const ROLES = {
+  dev:         { title: 'Developer',       ab: 'DEV',  cat: 'eng',  t: [
+    L => `Writes ${L.n} all day and fights ${L.pain} all night.`,
+    L => `Ships features in ${L.n} using ${L.pm}. Dreams of ${L.pain}.` ] },
+  student:     { title: 'Student',         ab: 'STU',  cat: 'eng',  t: [
+    L => `Learning ${L.n} for a class. Has met ${L.pain} and is reconsidering the major.`,
+    L => `The professor says ${L.n} builds character. The grade says otherwise.` ] },
+  intern:      { title: 'Intern',          ab: 'INT',  cat: 'eng',  t: [
+    L => `Was told ${L.n} is "easy to pick up." Then met ${L.pain}.`,
+    L => `Week one: ${L.pm}. Week two: the undocumented parts. Week three: lunch.` ] },
+  senior:      { title: 'Senior Engineer', ab: 'SR',   cat: 'eng',  t: [
+    L => `Knows ${L.pain} by its first name. Writes the postmortem before the bug happens.`,
+    L => `Always answers "it depends." Also ${L.fan}.` ] },
+  hacker:      { title: 'Hacker',          ab: 'HAK',  cat: 'sec',  t: [
+    L => `Pokes at ${L.n} code for fun. ${cap(L.pain)} is a favorite treasure map.`,
+    L => `Reads ${L.n} source at midnight, finds ${L.pain}, whispers "oh no" with delight.` ] },
+  manager:     { title: 'Manager',         ab: 'MGR',  cat: 'biz',  t: [
+    L => `Hasn't written ${L.n} in years, but asks "how hard can it be?" about ${L.pain}.`,
+    L => `Schedules a meeting about ${L.pm}. Cancels it. Reschedules it.` ] },
+  founder:     { title: 'Founder',         ab: 'FND',  cat: 'biz',  t: [
+    L => `Rewrote the MVP in ${L.n} because it "scales." Zero users. One incident with ${L.pain}.`,
+    L => `Pitch: "${L.n}, but for pets." Reality: ${L.pain} and eleven weeks of runway.` ] },
+  vibecoder:   { title: 'Vibe Coder',      ab: 'VIBE', cat: 'ai',   t: [
+    L => `Asked an AI for ${L.n}, accepted every suggestion, and shipped. ${cap(L.pain)} arrives in production, as scheduled.`,
+    L => `Doesn't know ${L.n}. Doesn't need to. The vibes compile.` ] },
+  qa:          { title: 'QA Engineer',     ab: 'QA',   cat: 'eng',  t: [
+    L => `Tests ${L.n} apps by doing the one thing no developer imagined. ${cap(L.pain)} is a regular in the tracker.`,
+    L => `Writes the ticket: "Steps to reproduce: use ${L.n}."` ] },
+  sysadmin:    { title: 'Sysadmin',        ab: 'SYS',  cat: 'ops',  t: [
+    L => `Keeps ${L.n} services alive with ${L.pm} and prayer.`,
+    L => `Gets paged at 3 a.m. about ${L.pain}. Replies: "Have you tried turning it off and on again?"` ] },
+  datasci:     { title: 'Data Scientist',  ab: 'DS',   cat: 'ai',   t: [
+    L => `Runs ${L.n} in a notebook that works on exactly one laptop.`,
+    L => `Cleaned the data with ${L.n} for two weeks. The model says: "maybe."` ] },
+  designer:    { title: 'Designer',        ab: 'UX',   cat: 'eng',  t: [
+    L => `Wants the ${L.n} app to match the mockup. The mockup has never met ${L.pain}.`,
+    L => `Asks for "just a small tweak" in ${L.n}. It is a rewrite.` ] },
+  pentester:   { title: 'Pentester',       ab: 'PEN',  cat: 'sec',  t: [
+    L => `Paid to break ${L.n} apps politely. Reports ${L.pain} in a PDF with a severity chart.`,
+    L => `Finds a flaw in ${L.n} on day one. Spends day two making the report sound scarier.` ] },
+  threatactor: { title: 'Threat Actor',    ab: 'TA',   cat: 'sec',  t: [
+    L => `Targets ${L.n} stacks for fun and profit. ${cap(L.pain)} is a gift from the maintainers.`,
+    L => `Reads ${L.n} dependency lists the way other people read menus.` ] },
+  architect:   { title: 'Architect',       ab: 'ARC',  cat: 'eng',  t: [
+    L => `Draws ${L.n} boxes and arrows. Never has to deal with ${L.pain} personally.`,
+    L => `Designs a ${L.n} system that scales to a billion users. Currently has forty.` ] }
+};
+
+/* Hand-written overrides for the flagship combinations: id -> [name, flavor] */
+const OVERRIDES = {
+  python_vibecoder:      ['Python Vibe Coder', 'pip install everything. import antigravity. Ship.'],
+  javascript_vibecoder:  ['JS Vibe Coder', 'Ten frameworks, zero understanding, one deployed button.'],
+  rust_vibecoder:        ['Rust Vibe Coder', 'Fought the borrow checker with an LLM. The borrow checker won. The LLM wrote a longer apology.'],
+  python_pentester:      ['Python Pentester', 'Wrote the scanner in forty lines. The report took forty pages.'],
+  javascript_pentester:  ['JS Pentester', 'Found an XSS. Found three. Reported one. Saved two for the sequel.'],
+  sql_pentester:         ['SQL Pentester', 'Types a single quote. Smiles. Starts the report.'],
+  rust_pentester:        ['Rust Pentester', 'The memory is safe. The logic, less so.'],
+  c_threatactor:         ['Memory-Safety Skeptic', 'Has opinions about buffers and a hoodie that has seen things.'],
+  javascript_threatactor:['JS Threat Actor', 'Lives in your browser. Pays no rent.'],
+  python_threatactor:    ['Python Threat Actor', 'Ten thousand scripts, zero originality, one very successful phishing kit.'],
+  sql_threatactor:       ['SQL Threat Actor', 'Treats every input box as a love letter.'],
+  php_threatactor:       ['PHP Threat Actor', 'Finds a 2009 admin panel. Feels at home.'],
+  go_threatactor:        ['Go Threat Actor', 'Cross-compiles to everything. Brags about static binaries.'],
+  rust_threatactor:      ['Rust Threat Actor', 'Memory-safe malware. At least somebody cares about quality.'],
+  cobol_hacker:          ['COBOL Hacker', 'Breaks into banks still running Y2K patches. Finds the mainframe napping.'],
+  assembly_hacker:       ['Assembly Hacker', 'Speaks fluent chip. Has no friends. Has root.'],
+  rust_hacker:           ['Rust Hacker', 'Writes the exploit in Rust. "Safe" is a strong word.'],
+  python_hacker:         ['Python Hacker', 'The libraries do the real work. The hoodie gets the credit.'],
+  rust_dev:              ['Rustacean', 'Writes memory-safe code. Will tell you in thirty seconds.'],
+  go_dev:                ['Gopher', 'Has handled errors eleven thousand times. Same way every time.'],
+  java_dev:              ['Enterprise Java Dev', 'AbstractSingletonProxyFactoryBean is a personal best.'],
+  csharp_dev:            ['C# Dev', 'Has a Visual Studio license, a LINQ habit, and calm confidence.'],
+  haskell_dev:           ['Haskell Dev', 'Wrote a type system and a fan club.'],
+  typescript_dev:        ['TypeScript Dev', 'Typed "any" once. Never recovered.'],
+  css_dev:               ['CSS Dev', 'Writes !important like an apology.'],
+  swift_dev:             ['iOS Engineer', 'Fought Xcode for a week. Won. Apple changed the API.'],
+  kotlin_dev:            ['Android Engineer', 'Supports thirty versions of the OS. Nobody says thank you.'],
+  bash_dev:              ['Shell Scripter', 'Fifty lines of automation holding up a billion-dollar company.'],
+  cpp_senior:            ['C++ Greybeard', 'Knows nine ways to initialize an int. Picks the wrong one on purpose.'],
+  c_senior:              ['C Greybeard', 'Has pointers to pointers, opinions on malloc, and a scar.'],
+  lisp_senior:           ['Lisp Wizard', 'Writes macros that write macros that write regret.'],
+  typescript_senior:     ['TypeScript Type Wizard', 'Writes types so complex they run at compile time.'],
+  css_senior:            ['CSS Wizard', 'Has seen specificity wars. Wears the scars.'],
+  assembly_senior:       ['Assembly Veteran', 'Considers C a high-level language. Considers you a high-level language.'],
+  cobol_senior:          ['COBOL Veteran', 'Retired. Called back. Quoted triple. Paid in respect and a mug.'],
+  haskell_manager:       ['Monad Manager', 'Explains the sprint as a functor. Nobody asked.'],
+  python_datasci:        ['Pythonista Data Scientist', 'pandas, numpy, matplotlib, regret.'],
+  sql_datasci:           ['SQL Analyst', 'SELECT insight FROM spreadsheet WHERE manager = happy.'],
+  javascript_founder:    ['JS Founder', 'Rewrote it in Next.js. Still no users. Excellent Lighthouse score.'],
+  ruby_founder:          ['Rails Founder', 'Shipped in a weekend. Scaled in a year. Rewrote in two.'],
+  php_founder:           ['PHP Founder', 'Built a billion-dollar company on a language everyone mocks.'],
+  html_designer:         ['Web Designer', 'Pixel perfect. Mobile: imperfect. Dark mode: next quarter.'],
+  css_designer:          ['CSS Designer', 'Has centered a div. Will not say how. It cost them a decade.'],
+  perl_sysadmin:         ['Perl Sysadmin', 'Wrote a script in 2003. Still runs. The author left in 2009.'],
+  bash_sysadmin:         ['Shell Sysadmin', 'One script to rule them all. Unread since.'],
+  sql_sysadmin:          ['DBA', 'Knows you ran that query in production. Already forgave you. Not really.'],
+  python_sysadmin:       ['Python Sysadmin', 'Automated everything. Except the part where the script broke.'],
+  go_sysadmin:           ['Go SRE', 'Built the incident tool in Go. It is the only thing that never pages.'],
+  python_intern:         ['Python Intern', 'Imported antigravity. Morale soared. Nothing else did.'],
+  java_intern:           ['Java Intern', 'Beat Gradle in week two. Lost to Maven in week three.'],
+  javascript_intern:     ['JS Intern', 'Added one dependency. The bundle grew by forty megabytes.'],
+  python_student:        ['Python Student', 'First language. Last indentation error. Probably not.'],
+  c_student:             ['C Student', 'Segfaults on assignment three. Cries on four. Thrives on five.'],
+  java_student:          ['Java Student', 'public static void main. Do not ask why. Just write it.'],
+  haskell_student:       ['Haskell Student', 'Fell in love with recursion. Fell out over IO.']
+};
+
+function genAll() {
+  const out = [];
+  const langIds = Object.keys(LANGS);
+  const roleIds = Object.keys(ROLES);
+  langIds.forEach((lid, li) => {
+    const L = LANGS[lid];
+    roleIds.forEach((rid, ri) => {
+      const R = ROLES[rid];
+      const id = lid + '_' + rid;
+      let name = L.n + ' ' + R.title;
+      let flavor = R.t[(li + ri) % 2](L);
+      if (OVERRIDES[id]) { name = OVERRIDES[id][0]; flavor = OVERRIDES[id][1]; }
+      out.push({ id, name, cat: R.cat, sym: L.s + '/' + R.ab, flavor, rec: [[lid, rid]], gen: true });
+    });
+  });
+  return out;
+}
+
+function parseData(text, els) {
+  let cat = 'core';
+  text.split('\n').forEach((line, i) => {
+    line = line.trim();
+    if (!line) return;
+    if (line[0] === '#') { cat = line.slice(1).trim(); return; }
+    const f = line.split('|');
+    if (f.length !== 5) throw new Error('Bad line ' + (i + 1) + ': ' + line);
+    const rec = f[4] ? f[4].split(';').map(r => r.split('+')) : [];
+    els.push({ id: f[0], name: f[1], cat, sym: f[2], flavor: f[3], rec });
+  });
+}
+
+function parseStarters(text) {
+  const els = [];
+  text.split('\n').forEach(line => {
+    line = line.trim();
+    if (!line) return;
+    const f = line.split('|');
+    els.push({ id: f[0], name: f[1], cat: f[2], sym: f[3], flavor: f[4], rec: [], starter: true });
+  });
+  return els;
+}
+
+/* Build the whole world from raw text blobs. */
+function buildWorld(startersText, dataTexts) {
+  const list = parseStarters(startersText);
+  dataTexts.forEach(t => parseData(t, list));
+  genAll().forEach(e => list.push(e));
+  const byId = new Map();
+  const dupes = [];
+  list.forEach(e => { if (byId.has(e.id)) dupes.push(e.id); else byId.set(e.id, e); });
+  const recipes = new Map();
+  const unknown = [];
+  list.forEach(e => {
+    e.rec.forEach(pair => {
+      if (pair.length !== 2) { unknown.push(e.id + ': bad recipe'); return; }
+      pair.forEach(p => { if (!byId.has(p)) unknown.push(e.id + ' needs ' + p); });
+      const key = pair.slice().sort().join('+');
+      if (!recipes.has(key)) recipes.set(key, []);
+      if (!recipes.get(key).includes(e.id)) recipes.get(key).push(e.id);
+    });
+  });
+  return { list, byId, recipes, dupes, unknown };
+}
+
+/* ---------- 8-bit sprites ----------
+   Legend: . empty  k outline  a tint  b tint shade  w white  y yellow  o orange  r red  g green
+           u blue  p purple  s skin  n brown  e grey  d dark  c cyan                                  */
+const SPR = {};
+const sp = (name, rows) => { SPR[name] = rows.trim().split('\n').map(r => r.trim()); };
+
+/* --- objects and concepts --- */
+sp('chip', `
+.k.kk.k.
+kkkkkkkk
+.kaaaak.
+kkabbakk
+kkabbakk
+.kaaaak.
+kkkkkkkk
+.k.kk.k.`);
+sp('brackets', `
+aaa..aaa
+a......a
+a..bb..a
+a.bbbb.a
+a.bbbb.a
+a..bb..a
+a......a
+aaa..aaa`);
+sp('braces', `
+.aa..aa.
+.a....a.
+.a....a.
+aa....aa
+aa....aa
+.a....a.
+.a....a.
+.aa..aa.`);
+sp('tag', `
+........
+..a..a..
+.a....a.
+a..bb..a
+.a....a.
+..a..a..
+........
+........`);
+sp('gear', `
+...kk...
+.k.aa.k.
+.kaaaak.
+kaabbaak
+kaabbaak
+.kaaaak.
+.k.aa.k.
+...kk...`);
+sp('terminal', `
+kkkkkkkk
+kddddddk
+kdgddddk
+kddgdddk
+kdgddddk
+kddddddk
+kdddgggk
+kkkkkkkk`);
+sp('monitor', `
+kkkkkkkk
+kuuuuuuk
+kuwwwwuk
+kuwuuuuk
+kuuuuuuk
+kkkkkkkk
+..keek..
+.kkkkkk.`);
+sp('db', `
+..kkkk..
+.kaaaak.
+kkbbbbkk
+kaaaaaak
+kkbbbbkk
+kaaaaaak
+kkbbbbkk
+.kkkkkk.`);
+sp('server', `
+kkkkkkkk
+kaaaagak
+kkkkkkkk
+kaaaagak
+kkkkkkkk
+kaaaagak
+kkkkkkkk
+.k....k.`);
+sp('cloud', `
+........
+..kkk...
+.kuuukk.
+kuuuuuuk
+kuuuuuuk
+.kkkkkk.
+........
+........`);
+sp('globe', `
+..kkkk..
+.kuuggk.
+kuugguuk
+kugguuuk
+kuuugguk
+kuuuguuk
+.kuuuuk.
+..kkkk..`);
+sp('bolt', `
+....yy..
+...yy...
+..yy....
+.yyyyyy.
+...yy...
+..yy....
+.yy.....
+yy......`);
+sp('coin', `
+..kkkk..
+.kyyyyk.
+kyywyyok
+kywyyyok
+kywyyyok
+kyyyyyok
+.kooook.
+..kkkk..`);
+sp('clock', `
+..kkkk..
+.kwwwwk.
+kwwwkwwk
+kwwwkkwk
+kwwwwwwk
+kwwwwwwk
+.kwwwwk.
+..kkkk..`);
+sp('hourglass', `
+kkkkkkkk
+.kyyyyk.
+..kyyk..
+...kk...
+...kk...
+..kyyk..
+.kyyyyk.
+kkkkkkkk`);
+sp('bulb', `
+..kkkk..
+.kyyyyk.
+kyywyyyk
+kyyyyyyk
+.kyyyyk.
+..kkkk..
+..keek..
+...kk...`);
+sp('keyboard', `
+........
+kkkkkkkk
+kewewewk
+kkkkkkkk
+kwewewek
+kkkkkkkk
+kewwwwek
+kkkkkkkk`);
+sp('cup', `
+..e.e...
+...e.e..
+kkkkkk..
+kwwwwkkk
+kwwwwkwk
+kwwwwkkk
+.kwwwk..
+..kkk...`);
+sp('bug', `
+.k....k.
+..k..k..
+..kggk..
+kkgggkkk
+..kggk..
+kkgggkkk
+..kggk..
+..k..k..`);
+sp('crown', `
+........
+y..yy..y
+yy.yy.yy
+yyyyyyyy
+yyryyryy
+kkkkkkkk
+........
+........`);
+sp('loop', `
+..aaaa..
+.a....a.
+a....aaa
+a.....a.
+a.a.....
+aaa....a
+.a....a.
+..aaaa..`);
+sp('branch', `
+aa....aa
+aa....aa
+.a...a..
+.aa.a...
+..aa....
+..a.....
+.aa.....
+.aa.....`);
+sp('cube', `
+..kkkk..
+.kaaaak.
+kaaaabbk
+kkkkkbbk
+kaaabbbk
+kaaabbbk
+kaaabbbk
+.kkkkkk.`);
+sp('doc', `
+.kkkkk..
+.kwwwkk.
+.kwwwwwk
+.kwbbbwk
+.kwwwwwk
+.kwbbbwk
+.kwwwwwk
+.kkkkkkk`);
+sp('folder', `
+........
+kkkk....
+kyyykkkk
+kyyyyyyk
+kyyyyyyk
+kyyyyyyk
+kkkkkkkk
+........`);
+sp('lock', `
+..kkkk..
+.k....k.
+.k....k.
+kkkkkkkk
+kyyyyyyk
+kyyykkyk
+kyyyyyyk
+kkkkkkkk`);
+sp('key', `
+.kkk....
+kyyyk...
+kyykk...
+kyyyk...
+.kkyk...
+...yk...
+..yyk...
+...yk...`);
+sp('shield', `
+kkkkkkkk
+kaaaabbk
+kaaaabbk
+kaaaabbk
+.kaaabk.
+..kaabk.
+...kkk..
+........`);
+sp('envelope', `
+........
+kkkkkkkk
+kwkwwkwk
+kwwkkwwk
+kwkwwkwk
+kwwwwwwk
+kkkkkkkk
+........`);
+sp('hook', `
+...aa...
+...a....
+...a....
+...a....
+a..a....
+aa.a....
+.aaa....
+..a.....`);
+sp('mask', `
+.kkkkkk.
+kwwwwwwk
+kkwwwwkk
+kwkwwkwk
+kwwwwwwk
+kwkkkkwk
+.kwwwwk.
+..kkkk..`);
+sp('skull', `
+.kkkkkk.
+kwwwwwwk
+kwkwwkwk
+kwkwwkwk
+kwwkkwwk
+.kwwwwk.
+.kwkwkwk
+..kkkkk.`);
+sp('bomb', `
+......y.
+.....y..
+...kkr..
+..kddkk.
+.kddddk.
+.kddddk.
+.kddddk.
+..kkkk..`);
+sp('ghost', `
+..kkkk..
+.kwwwwk.
+kwwwwwwk
+kwkwwkwk
+kwwwwwwk
+kwwwwwwk
+kwwkkwwk
+.kk..kk.`);
+sp('flame', `
+...r....
+..rr....
+..rrr.r.
+.rrorrr.
+.rooorr.
+rrooyorr
+.roooyr.
+..rrrr..`);
+sp('robot', `
+...kk...
+...rk...
+.kkkkkk.
+kaaaaaak
+kwkaakwk
+kaaaaaak
+kakkkkak
+.kkkkkk.`);
+sp('brain', `
+..kkkk..
+.kaakak.
+kaabaaak
+kabaabak
+kaaabaak
+.kabaak.
+..kaakk.
+...kk...`);
+sp('rocket', `
+...kk...
+..kwwk..
+..kwuk..
+..kwwk..
+.kkwwkk.
+.krkkrk.
+..ryyr..
+...yy...`);
+sp('flask', `
+..kkkk..
+...kk...
+...kk...
+..kwwk..
+.kwgggk.
+kwggggwk
+kggggggk
+.kkkkkk.`);
+sp('magnifier', `
+.kkkk...
+kwwwwk..
+kwuuwk..
+kwwwwk..
+.kkkkkk.
+....kkk.
+.....kkk
+......kk`);
+sp('wrench', `
+..kk.kk.
+.keekeek
+.keeeeek
+..keeek.
+..keek..
+..keek..
+..keek..
+...kk...`);
+sp('trophy', `
+kkkkkkkk
+kyyyyyyk
+kyyyyyyk
+.kyyyyk.
+..kyyk..
+...yy...
+..kyyk..
+.kkkkkk.`);
+sp('star', `
+...yy...
+...yy...
+yyyyyyyy
+.yyyyyy.
+..yyyy..
+..yyyy..
+.yy..yy.
+.y....y.`);
+sp('question', `
+.kkkkk..
+kwwwwwk.
+kk..kwk.
+...kwk..
+..kwk...
+..kk....
+..kwk...
+..kk....`);
+sp('calendar', `
+.k....k.
+kkkkkkkk
+krrrrrrk
+kwwwwwwk
+kwbwbwwk
+kwwwwwwk
+kwbwbwwk
+kkkkkkkk`);
+sp('chat', `
+.kkkkkk.
+kwwwwwwk
+kwbwbwbk
+kwwwwwwk
+.kkwwkk.
+...kwk..
+....kk..
+........`);
+sp('briefcase', `
+..kkkk..
+..k..k..
+kkkkkkkk
+kaaaaaak
+kaaayaak
+kaaaaaak
+kkkkkkkk
+........`);
+sp('chart', `
+k.......
+k......y
+k....y.y
+k.g..y.y
+k.g.gy.y
+kggggyyy
+kkkkkkkk
+........`);
+sp('pencil', `
+......kk
+.....kyk
+....kyyk
+...kyyk.
+..kyyk..
+.kwyk...
+kwwk....
+kkk.....`);
+sp('palette', `
+..kkkk..
+.kwwwwk.
+kwrrwyyk
+kwrrwwyk
+kwwwwwwk
+kuuwwggk
+.kuwwgk.
+..kkkk..`);
+sp('snake', `
+..aaaw..
+.aaaaaa.
+.aa.....
+..aaaa..
+....aaa.
+.....aa.
+.aaaaaa.
+..aaaa..`);
+sp('elephant', `
+.aa..aa.
+aaaaaaaa
+aaw..waa
+aaaaaaaa
+.aaaaaa.
+..aaaa..
+..aabb..
+...bb...`);
+sp('gem', `
+..kkkk..
+.krrrrk.
+krwrrrrk
+krrrrrrk
+.krrrrk.
+..krrk..
+...kk...
+........`);
+sp('bird', `
+.....aa.
+....aaaa
+...aaaaa
+..aaaaa.
+.aaaaa..
+aaaaa...
+.aaa....
+..a.....`);
+sp('gopher', `
+.cc..cc.
+cccccccc
+cwkccwkc
+cwwccwwc
+ccckkccc
+ccwwwwcc
+.cccccc.
+..c..c..`);
+sp('crab', `
+a......a
+aa....aa
+.a.aa.a.
+.aaaaaa.
+aawaawaa
+.aaaaaa.
+..a..a..
+.a....a.`);
+sp('lambda', `
+.aa.....
+..aa....
+...aa...
+...aaa..
+..aa.aa.
+.aa...aa
+aa.....a
+a.......`);
+sp('parens', `
+..aa.aa.
+.a....a.
+a......a
+a......a
+a......a
+a......a
+.a....a.
+..aa.aa.`);
+sp('grid', `
+kkkkkkkk
+kggggggk
+kkkkkkkk
+kgkgkgkk
+kkkkkkkk
+kgkgkgkk
+kkkkkkkk
+........`);
+sp('asterisk', `
+...aa...
+.a.aa.a.
+..aaaa..
+aaaaaaaa
+..aaaa..
+.a.aa.a.
+...aa...
+........`);
+sp('cart', `
+.kkkkkk.
+kddddddk
+kdaaaadk
+kdabbadk
+kdaaaadk
+kddddddk
+kkkkkkkk
+.k.kk.k.`);
+sp('plug', `
+.k.kk.k.
+.e.ee.e.
+kkkkkkkk
+kddddddk
+kddddddk
+.kddddk.
+..keek..
+..keek..`);
+sp('bell', `
+...yy...
+..yyyy..
+.yyyyyy.
+.yyyyyy.
+.yyyyyy.
+yyyyyyyy
+kkkkkkkk
+...oo...`);
+sp('flag', `
+kkkk....
+krrrrrr.
+krrrrrr.
+krrrrrr.
+krrrrr..
+k.......
+k.......
+k.......`);
+sp('hash', `
+..a..a..
+..a..a..
+aaaaaaaa
+..a..a..
+..a..a..
+aaaaaaaa
+..a..a..
+..a..a..`);
+sp('pointer', `
+k.......
+kk......
+kwk.....
+kwwk....
+kwwwk...
+kwwwwk..
+kwwkk...
+.kk.....`);
+sp('check', `
+........
+......gg
+.....gg.
+g...gg..
+gg.gg...
+.ggg....
+..g.....
+........`);
+sp('cross', `
+r......r
+rr....rr
+.rr..rr.
+..rrrr..
+..rrrr..
+.rr..rr.
+rr....rr
+r......r`);
+sp('leaf', `
+.....gg.
+...gggg.
+..ggggg.
+.gggggg.
+.ggggg..
+ggggg...
+.kg.....
+k.......`);
+
+/* --- people: one figure per role. the shirt (a) takes the language color --- */
+sp('person', `
+..kkkk..
+.kssssk.
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaaak
+kaabbaak
+.k....k.`);
+sp('r_dev', `
+..kkkk..
+.kssssk.
+.kwkkwk.
+..kssk..
+.kaaaak.
+kaaaaaak
+kkeeeekk
+.kkkkkk.`);
+sp('r_student', `
+kkkkkkkk
+.kkddkk.
+.kssssk.
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaaak
+.kb..bk.`);
+sp('r_intern', `
+..kkkk..
+.kssssk.
+.kssssk.
+..kssk..
+.kaaaak.
+kaawwaak
+kaawwaak
+.k....k.`);
+sp('r_senior', `
+..kkkk..
+.keeeek.
+.kssssk.
+.keeeek.
+..keek..
+.kaaaak.
+kaaaaaak
+.k....k.`);
+sp('r_hacker', `
+..kkkk..
+.kddddk.
+kddddddk
+kdgddgdk
+kddddddk
+.kdkkdk.
+kdaaaadk
+.kkkkkk.`);
+sp('r_manager', `
+..kkkk..
+.kssssk.
+.kssssk.
+..kssk..
+.kwrrwk.
+kwwrrwwk
+kaarraak
+.k.rr.k.`);
+sp('r_founder', `
+..kyyk..
+.kyyyyk.
+.kssssk.
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaaak
+.k....k.`);
+sp('r_vibecoder', `
+.pppppp.
+pksssskp
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaaak
+kaaaaaak
+.k....k.`);
+sp('r_qa', `
+..kkkk..
+.kssssk.
+.kuuuuk.
+..kssk..
+.kaaaak.
+kaarraak
+kaaaaaak
+.k....k.`);
+sp('r_sysadmin', `
+.kddddk.
+.kssssk.
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaaak
+kaaooaak
+.k....k.`);
+sp('r_datasci', `
+..kkkk..
+.kssssk.
+.kwkkwk.
+..kssk..
+.kaaaak.
+kaaaaaak
+kaagyrak
+.k....k.`);
+sp('r_designer', `
+..kpppk.
+.kppppk.
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaayk
+kaaaaaak
+.k....k.`);
+sp('r_pentester', `
+..kkkk..
+.kssssk.
+.kcccck.
+..kssk..
+.kaaaak.
+kaabbaak
+kaaaaaak
+.k....k.`);
+sp('r_threatactor', `
+..kkkk..
+.krrrrk.
+.ksrrsk.
+.krrrrk.
+..krrk..
+.kddddk.
+kddddddk
+.k....k.`);
+sp('r_architect', `
+..kyyk..
+.kyyyyk.
+kkkkkkkk
+.kssssk.
+..kssk..
+.kaaaak.
+kaaaaaak
+.k....k.`);
+
+/* ---------- Icon mapping and rendering ---------- */
+const LANG_COLOR = {
+  python: '#4a86c8', javascript: '#f0c929', typescript: '#3a7bd5', java: '#e0674f', c: '#6a78e8', cpp: '#5c8fd9',
+  rust: '#ee7d3b', go: '#19b4d6', php: '#8a95c9', ruby: '#d9384e', swift: '#f4603f', kotlin: '#a366ea', csharp: '#8c63cf',
+  sql: '#e8960c', bash: '#3fb06a', haskell: '#9367d8', lisp: '#c99434', assembly: '#8f9ab0', perl: '#3f95ad', cobol: '#74839a',
+  html: '#ea5a2f', css: '#3a86e8', yaml: '#d9485c', json: '#93a0b5', xml: '#e5842a', regex: '#ad63e8', excel: '#26a35e', markdown: '#6b7894'
+};
+
+const GROUPS = {
+  person: 'human',
+  keyboard: 'keyboard tabs-vs-spaces keylogger',
+  cup: 'coffee java jvm honeypot',
+  bug: 'bug production-bug off-by-one memory-leak gil vulnerability ai-slop',
+  globe: 'internet dns cdn open-source remote-work vacation dark-web',
+  bolt: 'electricity goroutine cache',
+  coin: 'money technical-debt cloud-bill crypto-bro nft ipo bug-bounty ai-bubble',
+  clock: 'time cron deadline estimate',
+  hourglass: 'cache-invalidation race-condition legacy-code latency async-await',
+  bulb: 'logic',
+  crown: 'ego dunning-kruger mythical-engineer privilege-escalation',
+  tag: 'code html xml ai-generated-code div-soup',
+  brackets: 'variable array string',
+  braces: 'json',
+  lambda: 'function lambda monad haskell',
+  parens: 'lisp parentheses',
+  asterisk: 'regex regex-hell',
+  hash: 'hash csharp',
+  gear: 'algorithm compiler interpreter c cpp brute-force kubernetes ci-cd ml-ops',
+  chip: 'binary bit byte assembly kernel firmware gpu quantum-computer',
+  monitor: 'computer ide vscode ios-dev status-page windows macos monitoring siem',
+  terminal: 'terminal bash vim emacs linux shell-script sudo print-debugging',
+  loop: 'loop infinite-loop recursion agent-loop spaghetti-code scope-creep agile pivot reorg rollback callback-hell',
+  branch: 'git branch commit pull-request github fork if-else',
+  magnifier: 'code-review debugger root-cause search-engine binary-search observability rag ai-code-review spyware',
+  doc: 'documentation readme todo-comment code-comment markdown yaml header-file smart-contract contract requirements whiteboard performance-review onboarding jira left-pad copy-paste pentest-report cve sla logging helm-chart context-window notebook type-hints stack-trace',
+  db: 'data database sql redis nosql backup training-data vector-db data-breach stored-proc db-index sql-join',
+  server: 'server stack load-balancer event-bus kafka cobol',
+  cloud: 'cloud aws azure gcp serverless terraform system-design',
+  cube: 'object class queue library framework package-manager dependency node-modules container docker pod microservices monolith service-mesh nodejs npm react angular vue jquery webpack nextjs django laravel dotnet cargo garbage-collector blockchain no-code low-code z-index',
+  plug: 'api driver turn-it-off-and-on',
+  shield: 'firewall vpn dmz waf zero-trust security-theater borrow-checker null-safety ai-safety alignment',
+  lock: 'password-manager two-factor encryption tls-cert backdoor it-works-dont-touch',
+  key: 'password password-reuse credential-stuffing public-key private-key leaked-secret jailbreak',
+  hook: 'phishing spear-phishing typosquatting',
+  mask: 'social-engineering imposter-syndrome',
+  skull: 'segfault dead-code post-mortem malware ransomware trojan rootkit rm-rf drop-table unsafe-block',
+  bomb: 'exploit zero-day sql-injection xss buffer-overflow rce supply-chain-attack ddos force-push friday-deploy prompt-injection',
+  ghost: 'null-pointer heisenbug undefined undefined-behavior hallucination',
+  flame: 'hotfix severity-one outage crunch burnout incident-response chaos-monkey disaster-recovery template-hell important js-fatigue',
+  robot: 'ai llm ai-agent copilot botnet android skynet',
+  brain: 'machine-learning neural-net embeddings',
+  rocket: 'mvp startup deploy blue-green ship-it',
+  flask: 'quantum-supremacy flask',
+  wrench: 'linter formatter patch fine-tuning monkey-patch',
+  trophy: 'leetcode promotion-packet',
+  star: 'magic-number feature unicorn easter-egg agi silver-bullet',
+  question: 'nan any-type center-a-div',
+  calendar: 'sprint scrum patch-tuesday',
+  chat: 'meeting standup retro all-hands open-office stackoverflow bikeshedding prompt technical-interview hello-world',
+  briefcase: 'stakeholder acquihire return-to-office',
+  chart: 'sorting big-o cvss gradient-descent overfitting pitch-deck pandas numpy',
+  palette: 'css tailwind bootstrap rainbow-table',
+  snake: 'python cython',
+  elephant: 'php',
+  gem: 'ruby rails',
+  bird: 'swift rubber-duck canary',
+  gopher: 'go',
+  crab: 'rust rewrite-in-rust',
+  grid: 'excel',
+  cart: 'javascript typescript kotlin perl',
+  bell: 'alert-fatigue on-call mfa-fatigue ids',
+  flag: 'roadmap feature-flag ctf',
+  pointer: 'pointer git-blame',
+  check: 'boolean works-on-my-machine captcha compliance uptime definition-of-done',
+  cross: 'merge-conflict stack-overflow-error layoffs indentation-error semicolon',
+  leaf: 'touch-grass greenfield spring',
+  envelope: 'breach-notice',
+  r_dev: 'dev frontend backend fullstack devops 10x-engineer pair-programmers freelancer rubber-duck-human',
+  r_student: 'student bootcamp-grad self-taught hackathon-team',
+  r_intern: 'intern junior',
+  r_senior: 'senior staff principal tech-lead consultant oss-maintainer functional-programmer',
+  r_hacker: 'hacker script-kiddie white-hat black-hat grey-hat bug-bounty-hunter',
+  r_manager: 'manager director vp-eng ceo cto product-manager scrum-master recruiter sales-engineer ciso confused-recruiter',
+  r_founder: 'founder',
+  r_vibecoder: 'vibecoder prompt-engineer vibe-coding',
+  r_qa: 'qa tester-in-prod',
+  r_sysadmin: 'sysadmin sre soc-analyst tech-support',
+  r_datasci: 'datasci',
+  r_designer: 'designer',
+  r_pentester: 'pentester red-team blue-team purple-team',
+  r_threatactor: 'threatactor apt nation-state insider-threat ransomware-gang',
+  r_architect: 'architect'
+};
+
+const EXPLICIT = {};
+Object.keys(GROUPS).forEach(name => GROUPS[name].split(/\s+/).forEach(id => { if (id) EXPLICIT[id] = name; }));
+
+/* A small invader-style generator gives every unmapped element its own sprite. */
+function hash32(str) {
+  let h = 2166136261;
+  for (let i = 0; i < str.length; i++) { h ^= str.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return h >>> 0;
+}
+function rng(seed) {
+  return () => {
+    seed = (seed + 0x6D2B79F5) | 0;
+    let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+    t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+function invaderRows(id) {
+  const r = rng(hash32(id)), rows = [];
+  for (let y = 0; y < 8; y++) {
+    let half = '';
+    for (let x = 0; x < 4; x++) {
+      const dense = (y === 0 || y === 7) ? 0.35 : (x > 1 ? 0.7 : 0.55);
+      half += r() < dense ? (r() < 0.3 ? 'b' : 'a') : '.';
+    }
+    rows.push(half + half.split('').reverse().join(''));
+  }
+  [2].forEach(y => { const a = rows[y].split(''); a[2] = 'w'; a[5] = 'w'; rows[y] = a.join(''); });
+  const a3 = rows[3].split(''); a3[2] = 'k'; a3[5] = 'k'; rows[3] = a3.join('');
+  return rows;
+}
+
+function iconSpec(e) {
+  if (e.gen) {
+    const i = e.id.indexOf('_');
+    return { name: 'r_' + e.id.slice(i + 1), tint: LANG_COLOR[e.id.slice(0, i)] || '' };
+  }
+  const name = EXPLICIT[e.id];
+  if (name && SPR[name]) return { name, tint: LANG_COLOR[e.id] || '' };
+  const key = 'inv_' + e.id;
+  if (!SPR[key]) SPR[key] = invaderRows(e.id);
+  return { name: key, tint: '', invader: true };
+}
+
+const svgCache = {};
+function spriteSVG(name) {
+  if (svgCache[name]) return svgCache[name];
+  const rows = SPR[name], h = rows.length, w = rows[0].length, byColor = {};
+  rows.forEach((row, y) => {
+    let x = 0;
+    while (x < w) {
+      const c = row[x];
+      if (c === '.') { x++; continue; }
+      let n = 1;
+      while (x + n < w && row[x + n] === c) n++;
+      (byColor[c] = byColor[c] || []).push('M' + x + ' ' + y + 'h' + n + 'v1h-' + n + 'z');
+      x += n;
+    }
+  });
+  let out = '<svg class="px" viewBox="0 0 ' + w + ' ' + h + '" aria-hidden="true" focusable="false">';
+  Object.keys(byColor).forEach(c => { out += '<path class="' + c + '" d="' + byColor[c].join('') + '"/>'; });
+  return (svgCache[name] = out + '</svg>');
+}
+
+function badgeHTML(e, big) {
+  const s = iconSpec(e);
+  return '<span class="badge' + (big ? ' big' : '') + '"' + (s.tint ? ' style="--ic:' + s.tint + '"' : '') + '>' + spriteSVG(s.name) + '</span>';
+}
+
+/* small inline icon for buttons and filter chips */
+function pxi(name, tint) {
+  return '<i class="pxi"' + (tint ? ' style="--ic:' + tint + '"' : '') + '>' + spriteSVG(name) + '</i>';
+}
+
+const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', sec: 'shield', tool: 'wrench', bug: 'bug', ops: 'server', ai: 'robot', biz: 'briefcase', meta: 'star' };
+
+/* ---------- Engine ---------- */
+(function () {
+  'use strict';
+
+  const W = buildWorld(RAW.starters, RAW.data);
+  const EL = W.byId;
+  const RECIPES = W.recipes;
+  const TOTAL = W.list.length;
+  const STARTERS = W.list.filter(e => e.starter).map(e => e.id);
+  const CAT_ORDER = {}, CAT_NAME = {};
+  CATS.forEach((c, i) => { CAT_ORDER[c.id] = i; CAT_NAME[c.id] = c.name; });
+
+  const KEY = 'stack-alchemist-v1';
+  const MAX_CHIPS = 40;
+  const $ = id => document.getElementById(id);
+  const board = $('board'), items = $('items'), tray = $('tray'), statusEl = $('status'),
+        foundEl = $('found'), emptyEl = $('empty'), guideEl = $('guide'),
+        world = $('world'), marqueeEl = $('marquee'),
+        zOut = $('zOut'), zReset = $('zReset'), zIn = $('zIn'), zFit = $('zFit'),
+        boxLayer = $('boxlayer'), toolsEl = $('tools'), paletteEl = $('palette'), swatchesEl = $('swatches'), filtersEl = $('filters');
+
+  const RANKS = [
+    [0, 'Hello, World'], [15, 'Copy-Paste Apprentice'], [40, 'Works On My Machine'], [80, 'Mid-Level (Allegedly)'],
+    [140, 'Senior (Opinions Attached)'], [220, 'Staff (Meetings Only)'], [330, 'Principal (Appears Quarterly)'],
+    [450, 'Distinguished Fellow of Production'], [600, 'Grand Alchemist of the Stack'], [TOTAL, 'Chief Alchemy Officer']
+  ];
+  const rankFor = n => { let r = RANKS[0][1]; for (const [t, name] of RANKS) if (n >= t) r = name; return r; };
+
+  const FAIL = [
+    '{a} + {b}: compiled with warnings. Nothing happened.',
+    '{a} and {b} agreed to disagree.',
+    '{a} + {b} returned undefined.',
+    'Merge conflict between {a} and {b}. Resolved by doing nothing.',
+    '{a} + {b} = 404. Reaction not found.',
+    'All tests pass. Zero tests were run on {a} + {b}.',
+    '{a} looked at {b}. {b} looked away.',
+    'Have you tried turning {a} off and on again?',
+    'Dependency conflict: {a} wants a different {b}.',
+    '{a} + {b} exceeded the vibes quota.',
+    'Rate limited. Try a different pair.',
+    'The linter rejects this pairing.',
+    'Closed as duplicate of a question nobody can find.',
+    'No result. Not even an error. Somehow worse.',
+    'Compiling {a} and {b}... Error 418: I am a teapot.',
+    'Pull request opened, ignored, auto-closed.',
+    '{a} + {b} requires a meeting. The meeting was cancelled.',
+    '{b} filed a complaint with HR about {a}.',
+    'Insufficient budget for {a} + {b}.',
+    'The cache says no. The cache is stale.',
+    'A hush falls over the standup.',
+    'Works on my machine. Not on this workbench.',
+    '{a} + {b} was moved to next quarter.',
+    'The roadmap does not include {a} + {b}.',
+    'Chaos Monkey ate that combo.',
+    'Ticket created: "{a} + {b} does nothing." Priority: low.'
+  ];
+
+  /* ---------- state ---------- */
+  let S, discSet, seenSet;
+  const chips = new Map();
+  const notes = new Map();                 // boxes and text tiles drawn on the workbench
+  let uid = 1, zTop = 5, failStreak = 0, lastFail = -1, lastTap = null, foundTimer = 0, hinted = new Set();
+  let gcat = 'all', rankUp = null;
+  let V = { x: 0, y: 0, z: 1 };            // the view: pan offset (screen px) and zoom
+
+  const fresh = () => ({ disc: STARTERS.slice(), seen: STARTERS.slice(), board: [], tries: 0, fails: 0, hints: 0, sort: 'new', cat: 'all', tier: 'all', q: '', notes: [] });
+  function sync() { discSet = new Set(S.disc); seenSet = new Set(S.seen); }
+
+  function load() {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return null;
+      const o = JSON.parse(raw);
+      if (!o || !Array.isArray(o.disc)) return null;
+      const f = fresh();
+      f.disc = o.disc.filter(id => EL.has(id));
+      STARTERS.forEach(id => { if (!f.disc.includes(id)) f.disc.unshift(id); });
+      f.seen = (o.seen || []).filter(id => EL.has(id));
+      f.board = (o.board || []).filter(b => b && EL.has(b.id) && isFinite(b.x) && isFinite(b.y)).slice(0, MAX_CHIPS);
+      f.tries = o.tries | 0; f.fails = o.fails | 0; f.hints = o.hints | 0;
+      if (['new', 'az', 'type', 'tier'].includes(o.sort)) f.sort = o.sort;
+      f.notes = (Array.isArray(o.notes) ? o.notes : []).filter(n => n && (n.k === 'b' || n.k === 't') && isFinite(n.x) && isFinite(n.y) &&
+        Number.isInteger(n.c) && n.c >= 0 && n.c < 16 &&
+        (n.k === 't' ? typeof n.t === 'string' && n.t.length > 0 : isFinite(n.w) && isFinite(n.h) && n.w >= 1 && n.h >= 1)).slice(0, 80);
+      if (o.view && isFinite(o.view.x) && isFinite(o.view.y) && isFinite(o.view.z)) f.view = { x: +o.view.x, y: +o.view.y, z: Math.max(0.25, Math.min(3, +o.view.z)) };
+      return f;
+    } catch (e) { return null; }
+  }
+  function save() {
+    try {
+      localStorage.setItem(KEY, JSON.stringify({
+        disc: S.disc, seen: [...seenSet], tries: S.tries, fails: S.fails, hints: S.hints, sort: S.sort,
+        view: { x: Math.round(V.x), y: Math.round(V.y), z: Math.round(V.z * 1000) / 1000 },
+        board: [...chips.values()].map(c => ({ id: c.id, x: Math.round(c.x), y: Math.round(c.y) })),
+        notes: [...notes.values()].map(n => n.kind === 'box'
+          ? { k: 'b', x: Math.round(n.x), y: Math.round(n.y), w: Math.round(n.w), h: Math.round(n.h), c: n.color }
+          : { k: 't', x: Math.round(n.x), y: Math.round(n.y), c: n.color, t: n.text })
+      }));
+    } catch (e) { /* storage unavailable: the game still works */ }
+  }
+
+  const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  const inRect = (x, y, r) => x >= r.left && x <= r.right && y >= r.top && y <= r.bottom;
+
+  /* ---------- rendering: header, filters, drawer ---------- */
+  function renderMeter() {
+    const n = S.disc.length;
+    $('count').textContent = n + ' / ' + TOTAL;
+    $('bar').style.width = (n / TOTAL * 100) + '%';
+    $('rank').textContent = rankFor(n);
+  }
+
+  function renderFilters() {
+    let h = '';
+    if (S.sort === 'tier') {
+      const counts = {};
+      S.disc.forEach(id => { const t = SDEPTH[id]; counts[t] = (counts[t] || 0) + 1; });
+      h = '<button class="fchip" type="button" data-tier="all" aria-pressed="' + (S.tier === 'all') + '">' + pxi('star') + 'All ' + S.disc.length + '</button>';
+      Object.keys(counts).map(Number).sort((a, b) => a - b).forEach(t => {
+        h += '<button class="fchip" type="button" data-tier="' + t + '" aria-pressed="' + (S.tier === t) + '"><span class="tn">' + t + '</span>Tier ' + t + ' ' + counts[t] + '</button>';
+      });
+    } else {
+      const counts = {};
+      S.disc.forEach(id => { const c = EL.get(id).cat; counts[c] = (counts[c] || 0) + 1; });
+      h = '<button class="fchip" type="button" data-cat="all" aria-pressed="' + (S.cat === 'all') + '">' + pxi('star') + 'All ' + S.disc.length + '</button>';
+      CATS.forEach(c => {
+        if (counts[c.id]) h += '<button class="fchip" type="button" data-cat="' + c.id + '" aria-pressed="' + (S.cat === c.id) + '">' + pxi(CAT_ICON[c.id], 'var(--c-' + c.id + ')') + c.name + ' ' + counts[c.id] + '</button>';
+      });
+    }
+    filtersEl.innerHTML = h;
+  }
+
+  function visibleIds() {
+    let ids = S.disc.slice();
+    if (S.sort === 'tier') { if (S.tier !== 'all') ids = ids.filter(id => SDEPTH[id] === S.tier); }
+    else if (S.cat !== 'all') ids = ids.filter(id => EL.get(id).cat === S.cat);
+    const q = S.q.trim().toLowerCase();
+    if (q) ids = ids.filter(id => { const e = EL.get(id); return e.name.toLowerCase().includes(q) || e.flavor.toLowerCase().includes(q) || id.includes(q); });
+    if (S.sort === 'new') ids.reverse();
+    else if (S.sort === 'az') ids.sort((a, b) => EL.get(a).name.localeCompare(EL.get(b).name));
+    else if (S.sort === 'tier') ids.sort((a, b) => SDEPTH[a] - SDEPTH[b] || EL.get(a).name.localeCompare(EL.get(b).name));
+    else ids.sort((a, b) => CAT_ORDER[EL.get(a).cat] - CAT_ORDER[EL.get(b).cat] || EL.get(a).name.localeCompare(EL.get(b).name));
+    return ids;
+  }
+
+  function renderTray() {
+    if (typeof hideTip === 'function') hideTip();
+    const ids = visibleIds();
+    items.innerHTML = ids.length ? ids.map(id => {
+      const e = EL.get(id);
+      return '<button class="chip' + (seenSet.has(id) ? '' : ' fresh') + (hinted.has(id) ? ' hinted' : '') + '" type="button" data-id="' + id +
+        '" style="--c:var(--c-' + e.cat + ')">' + badgeHTML(e) + '<span class="nm">' + esc(e.name) + '</span></button>';
+    }).join('') : '<p class="none">Nothing matches that yet. It might not be discovered.</p>';
+    $('sort').textContent = { new: 'Newest', az: 'A to Z', type: 'By type', tier: 'By tier' }[S.sort];
+  }
+
+  function refreshAll() { renderMeter(); renderFilters(); renderTray(); updateEmpty(); }
+
+  function setStatus(msg) {
+    statusEl.textContent = msg;
+    statusEl.classList.remove('flash'); void statusEl.offsetWidth; statusEl.classList.add('flash');
+  }
+
+  function updateEmpty() {
+    if (chips.size === 0) {
+      emptyEl.hidden = false;
+      emptyEl.textContent = 'The workbench is empty. Tap anything in the drawer, or drag it here.';
+    } else if (S.tries === 0 && S.disc.length <= STARTERS.length + 1) {
+      emptyEl.hidden = false;
+      emptyEl.textContent = 'Drag Keyboard onto Logic and see what happens.';
+    } else {
+      emptyEl.hidden = true;
+    }
+  }
+
+  /* ---------- board chips ---------- */
+  function makeChip(id, cls) {
+    const e = EL.get(id), el = document.createElement('div'), u = uid++;
+    el.className = 'chip on-board' + (cls ? ' ' + cls : '');
+    el.dataset.u = u;
+    el.dataset.tid = id;
+    el.style.setProperty('--c', 'var(--c-' + e.cat + ')');
+    el.innerHTML = badgeHTML(e) + '<span class="nm">' + esc(e.name) + '</span>';
+    el.setAttribute('aria-label', e.name);
+    world.appendChild(el);
+    const c = { u, id, kind: 'chip', x: 0, y: 0, el };
+    chips.set(u, c);
+    fitChip(c);
+    return c;
+  }
+  /* The workbench is an endless canvas. Chips live in world coordinates inside #world, and the view (pan + zoom)
+     is a single transform on that layer: screen = view.xy + world * zoom.
+     The board paints its dots with the same offset and scale, so world 11 + 22n is always the centre of a dot,
+     at any zoom, and a chip whose corner sits on 11 + 22n has that corner exactly on a dot. */
+  const GRID = 22, HALF = GRID / 2;
+  const WMIN = HALF - GRID * 136, WMAX = HALF + GRID * 136;           // world limits, both exactly on dots
+  const ZMIN = 0.25, ZMAX = 3;
+  const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+  board.style.setProperty('--grid', GRID + 'px');
+
+  function applyView() {
+    world.style.transform = 'translate(' + V.x + 'px,' + V.y + 'px) scale(' + V.z + ')';
+    board.style.setProperty('--z', V.z);
+    board.style.setProperty('--ox', V.x + 'px');
+    board.style.setProperty('--oy', V.y + 'px');
+    const pct = Math.round(V.z * 100) + '%';
+    if (zReset.textContent !== pct) zReset.textContent = pct;
+  }
+  const origin = () => { const r = board.getBoundingClientRect(); return { x: r.left + board.clientLeft, y: r.top + board.clientTop }; };
+  const boardPt = (cx, cy) => { const o = origin(); return { x: cx - o.x, y: cy - o.y }; };   // client -> board padding-box px
+  function toWorld(cx, cy) { const o = origin(); return { x: (cx - o.x - V.x) / V.z, y: (cy - o.y - V.y) / V.z }; }
+  function zoomAt(sx, sy, nz) {                                       // (sx, sy) is a board-space point that stays put
+    nz = clamp(nz, ZMIN, ZMAX);
+    const wx = (sx - V.x) / V.z, wy = (sy - V.y) / V.z;
+    V.z = nz; V.x = sx - wx * nz; V.y = sy - wy * nz;
+    applyView();
+  }
+  function visibleWorld() { return { x0: -V.x / V.z, y0: -V.y / V.z, x1: (board.clientWidth - V.x) / V.z, y1: (board.clientHeight - V.y) / V.z }; }
+
+  const dotAtOrAfter = v => Math.ceil((v - HALF) / GRID - 1e-9) * GRID + HALF;
+  const dotAtOrBefore = v => Math.floor((v - HALF) / GRID + 1e-9) * GRID + HALF;
+  function snapTo(v, lo, hi) {
+    const a = dotAtOrAfter(lo), b = Math.max(a, dotAtOrBefore(hi));
+    return clamp(Math.round((v - HALF) / GRID) * GRID + HALF, a, b);
+  }
+
+  // every tile is a whole number of grid cells wide (4 cells at the least, for the icon) and exactly 2 cells tall
+  function fitChip(c) {
+    const el = c.el;
+    el.style.width = '';
+    const w = el.offsetWidth;
+    if (w) el.style.width = Math.max(4, Math.ceil(w / GRID)) * GRID + 'px';
+  }
+  function place(c, cx, cy, snap) {                                   // cx, cy: world coordinates of the chip's centre
+    const w = c.el.offsetWidth, h = c.el.offsetHeight;
+    let x = cx - w / 2, y = cy - h / 2;
+    if (snap) { x = snapTo(x, WMIN, WMAX - w); y = snapTo(y, WMIN, WMAX - h); }
+    else { x = clamp(x, WMIN, WMAX - w); y = clamp(y, WMIN, WMAX - h); }
+    c.x = x; c.y = y;
+    c.el.style.left = x + 'px'; c.el.style.top = y + 'px';
+  }
+  function clampAll() {                                               // re-measure tiles (fonts, resize) and keep them in the world
+    if (board.hidden) return;
+    allItems().forEach(c => {
+      if (c.kind === 'chip') fitChip(c); else if (c.kind === 'text') fitText(c);
+      const w = c.el.offsetWidth, h = c.el.offsetHeight;
+      c.x = clamp(c.x, WMIN, WMAX - w); c.y = clamp(c.y, WMIN, WMAX - h);
+      c.el.style.left = c.x + 'px'; c.el.style.top = c.y + 'px';
+    });
+  }
+  // chips live in the board's own stacking context, so their z-index can never climb over the card or the dialogs
+  function front(el) {
+    if (zTop > 50000) {
+      const arr = allItems().filter(i => i.kind !== 'box').sort((a, b) => (+a.el.style.zIndex || 0) - (+b.el.style.zIndex || 0));
+      arr.forEach((c, i) => { c.el.style.zIndex = 5 + i; });
+      zTop = 5 + arr.length;
+    }
+    el.style.zIndex = ++zTop;
+  }
+  function removeChip(c) { c.el.remove(); chips.delete(c.u); sel.delete(c.u); if (typeof hideTip === 'function') hideTip(); }
+  function freeSpot() {
+    const v = visibleWorld(), vw = v.x1 - v.x0, vh = v.y1 - v.y0;
+    let cx = 0, cy = 0;
+    for (let i = 0; i < 18; i++) {
+      cx = v.x0 + vw * (0.18 + Math.random() * 0.64); cy = v.y0 + vh * (0.22 + Math.random() * 0.5);
+      let ok = true;
+      for (const c of chips.values()) {
+        if (Math.abs(c.x + c.el.offsetWidth / 2 - cx) < c.el.offsetWidth / 2 + 70 && Math.abs(c.y + c.el.offsetHeight / 2 - cy) < 52) { ok = false; break; }
+      }
+      if (ok) break;
+    }
+    return [cx, cy];
+  }
+  function markSeen(id) { if (!seenSet.has(id)) { seenSet.add(id); S.seen.push(id); } }
+
+  function spawn(id, cx, cy, snap) {
+    if (chips.size >= MAX_CHIPS) { setStatus('The workbench is full. Clear it, or drag some things back to the drawer.'); return null; }
+    const c = makeChip(id, 'pop');
+    if (cx == null) [cx, cy] = freeSpot();
+    place(c, cx, cy, snap);
+    markSeen(id);
+    updateEmpty(); save();
+    return c;
+  }
+
+  function overlapTarget(c) {
+    const r = c.el.getBoundingClientRect(), area = r.width * r.height;
+    let best = null, bestA = 0;
+    chips.forEach(o => {
+      if (o === c) return;
+      const q = o.el.getBoundingClientRect();
+      const w = Math.min(r.right, q.right) - Math.max(r.left, q.left);
+      const h = Math.min(r.bottom, q.bottom) - Math.max(r.top, q.top);
+      if (w > 0 && h > 0 && w * h > bestA) { bestA = w * h; best = o; }
+    });
+    return bestA >= area * 0.2 ? best : null;
+  }
+
+  /* ---------- combining ---------- */
+  function combine(a, b) {
+    const A = EL.get(a.id), B = EL.get(b.id);
+    const res = RECIPES.get([a.id, b.id].sort().join('+'));
+    S.tries++;
+    if (!res) { fail(a, b, A, B); return; }
+    failStreak = 0;
+    const cx = (a.x + a.el.offsetWidth / 2 + b.x + b.el.offsetWidth / 2) / 2;
+    const cy = (a.y + a.el.offsetHeight / 2 + b.y + b.el.offsetHeight / 2) / 2;
+    removeChip(a); removeChip(b);
+    const news = [];
+    res.forEach((rid, i) => {
+      const c = makeChip(rid, 'pop');
+      place(c, cx + (i - (res.length - 1) / 2) * (c.el.offsetWidth + 12), cy);
+      if (!discSet.has(rid)) { discover(rid); news.push(rid); }
+    });
+    if (news.length) showFound(news, A, B);
+    else setStatus(A.name + ' + ' + B.name + ' = ' + res.map(r => EL.get(r).name).join(' + ') + ' (already in your drawer)');
+    refreshAll(); save();
+  }
+
+  function fail(a, b, A, B) {
+    S.fails++; failStreak++;
+    let i; do { i = Math.floor(Math.random() * FAIL.length); } while (i === lastFail);
+    lastFail = i;
+    setStatus(FAIL[i].replace(/\{a\}/g, A.name).replace(/\{b\}/g, B.name) + (failStreak >= 4 ? ' Stuck? Try the Hint button.' : ''));
+    const ax = a.x + a.el.offsetWidth / 2, ay = a.y + a.el.offsetHeight / 2;
+    const bx = b.x + b.el.offsetWidth / 2, by = b.y + b.el.offsetHeight / 2;
+    let dx = ax - bx, dy = ay - by; const len = Math.hypot(dx, dy) || 1;
+    dx /= len; dy /= len;
+    place(a, bx + dx * 120, by + dy * 70);
+    [a, b].forEach(c => { c.el.classList.remove('shake'); void c.el.offsetWidth; c.el.classList.add('shake'); });
+    refreshAll(); save();
+  }
+
+  function discover(id) {
+    const before = rankFor(S.disc.length);
+    S.disc.push(id); discSet.add(id);
+    const after = rankFor(S.disc.length);
+    if (after !== before) rankUp = after;
+  }
+
+  function showFound(news, A, B) {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.innerHTML = news.map(id => {
+      const e = EL.get(id);
+      return '<div class="found-row" style="--c:var(--c-' + e.cat + ')">' + badgeHTML(e, true) + '<div><div class="eyebrow">New discovery / ' +
+        esc(CAT_NAME[e.cat]) + '</div><div class="fname">' + esc(e.name) + '</div><div class="fflav">' + esc(e.flavor) + '</div></div></div>';
+    }).join('') +
+      '<div class="frecipe">' + esc(A.name) + ' + ' + esc(B.name) + '</div>' +
+      (rankUp ? '<div class="rankup">Rank up: ' + esc(rankUp) + '</div>' : '') +
+      (S.disc.length >= TOTAL ? '<div class="rankup">Every element discovered. Go touch grass.</div>' : '');
+    rankUp = null;
+    card.addEventListener('click', () => card.remove());
+    foundEl.replaceChildren(card);
+    clearTimeout(foundTimer);
+    foundTimer = setTimeout(() => card.remove(), 5600);
+    setStatus(A.name + ' + ' + B.name + ' = ' + news.map(id => EL.get(id).name).join(' + '));
+  }
+
+  /* ---------- annotations: boxes and text tiles ---------- */
+  // 16 colours, all taken from the colours already used by the game (category tokens, then the pixel-art palette)
+  const PALETTE = [
+    ['Slate', 'var(--c-core)'], ['Blue', 'var(--c-lang)'], ['Orange', 'var(--c-people)'], ['Teal', 'var(--c-eng)'],
+    ['Red', 'var(--c-sec)'], ['Violet', 'var(--c-tool)'], ['Gold', 'var(--c-bug)'], ['Cyan', 'var(--c-ops)'],
+    ['Pink', 'var(--c-ai)'], ['Olive', 'var(--c-biz)'], ['Purple', 'var(--c-meta)'], ['Ink', 'var(--ink)'],
+    ['Green', '#3ddc84'], ['Yellow', '#ffd23f'], ['Sky', '#4ea8ff'], ['Brown', '#9a6232']
+  ];
+  const MAX_NOTES = 80, CHIP_H = 44;
+  let tool = 'select', curColor = 1;
+
+  function allItems() { return [...chips.values(), ...notes.values()]; }
+  function itemOf(u) { return chips.get(u) || notes.get(u); }
+  function removeNote(n) { n.el.remove(); notes.delete(n.u); sel.delete(n.u); refreshTools(); }
+  function removeItem(m) { if (m.kind === 'chip') removeChip(m); else removeNote(m); }
+  const paint = (el, color) => el.style.setProperty('--pc', PALETTE[color][1]);
+
+  function setRect(n, x, y, w, h) {
+    n.x = x; n.y = y; n.w = w; n.h = h;
+    const st = n.el.style; st.left = x + 'px'; st.top = y + 'px'; st.width = w + 'px'; st.height = h + 'px';
+  }
+  function boxEl(color) {
+    const el = document.createElement('div');
+    el.className = 'note note-box';
+    el.innerHTML = '<i class="grip"></i>';
+    paint(el, color);
+    boxLayer.appendChild(el);
+    return el;
+  }
+  function makeBox(x, y, w, h, color) {
+    const n = { u: uid++, kind: 'box', color, el: boxEl(color) };
+    n.el.dataset.u = n.u;
+    setRect(n, x, y, clamp(w, 1, WMAX - WMIN), clamp(h, 1, WMAX - WMIN));
+    notes.set(n.u, n);
+    return n;
+  }
+
+  // text tiles: a whole number of cells wide (3 to 24) and a whole number of cells tall (2 for one line, +1 per extra line)
+  function fitText(n) {
+    const el = n.el;
+    if (board.hidden) return;
+    el.style.width = ''; el.style.height = '';
+    el.style.width = clamp(Math.ceil(el.offsetWidth / GRID), 3, 24) * GRID + 'px';
+    el.style.height = Math.max(2, Math.ceil(el.offsetHeight / GRID)) * GRID + 'px';
+    n.w = el.offsetWidth; n.h = el.offsetHeight;
+  }
+  function moveNote(n, x, y) {
+    n.x = clamp(x, WMIN, WMAX - n.el.offsetWidth); n.y = clamp(y, WMIN, WMAX - n.el.offsetHeight);
+    n.el.style.left = n.x + 'px'; n.el.style.top = n.y + 'px';
+  }
+  const plainOK = (() => { const d = document.createElement('div'); try { d.contentEditable = 'plaintext-only'; } catch (e) { /* older browsers */ } return d.contentEditable === 'plaintext-only'; })();
+  function caretAt(el, end) {
+    const r = document.createRange(); r.selectNodeContents(el); if (end) r.collapse(false);
+    const g = getSelection(); g.removeAllRanges(); g.addRange(r);
+  }
+  function makeText(x, y, text, color) {
+    const el = document.createElement('div');
+    el.className = 'note note-text';
+    el.setAttribute('role', 'note');
+    el.textContent = text;
+    paint(el, color);
+    const n = { u: uid++, kind: 'text', color, text, el, editing: false, x, y, w: 0, h: 0 };
+    el.dataset.u = n.u;
+    world.appendChild(el);
+    notes.set(n.u, n);
+    fitText(n); moveNote(n, x, y); front(el);
+    el.addEventListener('input', () => {
+      if (el.textContent.length > 400) { el.textContent = el.textContent.slice(0, 400); caretAt(el, true); }
+      fitText(n);
+    });
+    el.addEventListener('keydown', e => {
+      if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); finishEdit(n); el.blur(); }
+      else if (e.key === 'Enter' && !plainOK) { e.preventDefault(); document.execCommand('insertLineBreak'); }
+      else if (e.key === 'Escape') { e.preventDefault(); finishEdit(n); el.blur(); }
+    });
+    el.addEventListener('blur', () => finishEdit(n));
+    el.addEventListener('paste', e => {
+      if (plainOK) return;
+      e.preventDefault(); document.execCommand('insertText', false, (e.clipboardData || window.clipboardData).getData('text/plain'));
+    });
+    return n;
+  }
+  function editNote(n, isNew) {
+    if (n.editing) return;
+    const el = n.el;
+    n.editing = true; el.classList.add('editing');
+    el.contentEditable = plainOK ? 'plaintext-only' : 'true'; el.spellcheck = false;
+    setSel(new Set([n.u]));
+    el.focus(); caretAt(el, !!isNew);
+  }
+  function finishEdit(n) {
+    if (!n.editing) return;
+    n.editing = false;
+    const el = n.el, text = el.innerText.replace(/ /g, ' ').replace(/\s+$/, '');
+    el.classList.remove('editing'); el.removeAttribute('contenteditable');
+    if (!text.trim()) { removeNote(n); save(); return; }       // an empty text tile is just discarded
+    n.text = text; el.textContent = text; fitText(n); moveNote(n, n.x, n.y);
+    save();
+  }
+
+  /* ---------- selection ---------- */
+  const sel = new Set();                                    // uids of the selected tiles, boxes and text
+  function setSel(next) {
+    let same = next.size === sel.size;
+    if (same) next.forEach(u => { if (!sel.has(u)) same = false; });
+    if (same) return;
+    sel.clear(); next.forEach(u => sel.add(u));
+    allItems().forEach(c => c.el.classList.toggle('sel', sel.has(c.u)));
+    refreshTools();
+  }
+  const clearSel = () => setSel(new Set());
+  const selItems = () => [...sel].map(itemOf).filter(Boolean);
+  function announceSel() {
+    if (sel.size > 1) setStatus(sel.size + ' selected. Drag any one to move them all. A moved group never combines. Delete removes them, Esc clears.');
+  }
+  // moving a box carries everything that sits fully inside it
+  const fully = (o, b) => o.x >= b.x && o.y >= b.y && o.x + o.el.offsetWidth <= b.x + b.w && o.y + o.el.offsetHeight <= b.y + b.h;
+  function withContents(list) {
+    const out = new Map(list.map(m => [m.u, m]));
+    list.forEach(m => { if (m.kind === 'box') allItems().forEach(o => { if (o !== m && !out.has(o.u) && fully(o, m)) out.set(o.u, o); }); });
+    return [...out.values()];
+  }
+
+  /* ---------- tools and colour palette ---------- */
+  function setTool(t) {
+    tool = t;
+    if (t !== 'select') clearSel();                          // colours picked now are for the next shape, not the one selected before
+    toolsEl.querySelectorAll('.tool').forEach(b => b.setAttribute('aria-pressed', b.dataset.tool === t));
+    board.classList.toggle('tool-box', t === 'box');
+    board.classList.toggle('tool-text', t === 'text');
+    refreshTools();
+  }
+  function refreshTools() {
+    const ns = selItems().filter(i => i.kind !== 'chip');
+    paletteEl.hidden = !(tool !== 'select' || ns.length);
+    const cur = ns.length && ns.every(n => n.color === ns[0].color) ? ns[0].color : curColor;
+    swatchesEl.querySelectorAll('.sw').forEach(b => b.setAttribute('aria-pressed', +b.dataset.i === cur));
+  }
+  toolsEl.addEventListener('click', e => { const b = e.target.closest('.tool'); if (b) setTool(b.dataset.tool); });
+  swatchesEl.addEventListener('click', e => {
+    const b = e.target.closest('.sw');
+    if (!b) return;
+    curColor = +b.dataset.i;
+    selItems().forEach(n => { if (n.kind !== 'chip') { n.color = curColor; paint(n.el, curColor); } });
+    refreshTools(); save();
+  });
+
+  /* ---------- pointer interaction ---------- */
+  let drag = null, spaceDown = false, pinch = null, saveT = 0;
+  const touches = new Map();                                // live touch pointers on the board, for two-finger pinch
+  const saveSoon = () => { clearTimeout(saveT); saveT = setTimeout(save, 400); };
+
+  function capture(el, id) { try { el.setPointerCapture(id); } catch (err) { /* synthetic or already released */ } }
+  function startPan(e) {
+    e.preventDefault();
+    drag = { kind: 'pan', pid: e.pointerId, sx: e.clientX, sy: e.clientY, vx: V.x, vy: V.y };
+    board.classList.add('panning'); hideTip(); capture(board, e.pointerId);
+  }
+  function startMarquee(e) {
+    e.preventDefault();
+    drag = { kind: 'marquee', pid: e.pointerId, sx: e.clientX, sy: e.clientY, add: e.ctrlKey || e.metaKey, base: new Set(sel), moved: false };
+    capture(board, e.pointerId);
+  }
+  function startPinch() {
+    const p = [...touches.values()], a = boardPt(p[0].x, p[0].y), b = boardPt(p[1].x, p[1].y);
+    pinch = { d0: Math.hypot(a.x - b.x, a.y - b.y) || 1, mx0: (a.x + b.x) / 2, my0: (a.y + b.y) / 2, z0: V.z, vx0: V.x, vy0: V.y };
+  }
+  function movePinch() {
+    const p = [...touches.values()];
+    if (p.length < 2) return;
+    const a = boardPt(p[0].x, p[0].y), b = boardPt(p[1].x, p[1].y);
+    const d = Math.hypot(a.x - b.x, a.y - b.y) || 1, mx = (a.x + b.x) / 2, my = (a.y + b.y) / 2;
+    const nz = clamp(pinch.z0 * d / pinch.d0, ZMIN, ZMAX);
+    const wx = (pinch.mx0 - pinch.vx0) / pinch.z0, wy = (pinch.my0 - pinch.vy0) / pinch.z0;
+    V.z = nz; V.x = mx - wx * nz; V.y = my - wy * nz;
+    applyView();
+  }
+  function dropEmptyDrag() {                                // abandon a pan, marquee or box in progress without side effects
+    if (!drag) return;
+    if (drag.kind === 'pan') board.classList.remove('panning');
+    if (drag.kind === 'marquee') marqueeEl.hidden = true;
+    if (drag.kind === 'box') drag.el.remove();
+    drag = null;
+  }
+
+  // ---- boxes: drag out a rectangle (corners snap to dots while Shift is held)
+  function startBox(e) {
+    e.preventDefault(); hideTip();
+    if (notes.size >= MAX_NOTES) { setStatus('That is a lot of boxes and notes. Delete a few first.'); return; }
+    const el = boxEl(curColor); el.classList.add('drawing'); el.hidden = true;
+    drag = { kind: 'box', pid: e.pointerId, sx: e.clientX, sy: e.clientY, p0: toWorld(e.clientX, e.clientY), el, moved: false, r: null };
+    capture(board, e.pointerId);
+  }
+  function drawBox(e) {
+    const d = drag;
+    if (!d.moved) { if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 4) return; d.moved = true; d.el.hidden = false; }
+    const p = toWorld(e.clientX, e.clientY), f = v => e.shiftKey ? snapTo(v, WMIN, WMAX) : Math.round(v);
+    const x0 = f(d.p0.x), y0 = f(d.p0.y), x1 = f(p.x), y1 = f(p.y);
+    const w = Math.max(GRID, Math.abs(x1 - x0)), h = Math.max(GRID, Math.abs(y1 - y0));
+    const x = clamp(Math.min(x0, x1), WMIN, WMAX - w), y = clamp(Math.min(y0, y1), WMIN, WMAX - h);
+    d.r = { x, y, w, h };
+    const st = d.el.style; st.left = x + 'px'; st.top = y + 'px'; st.width = w + 'px'; st.height = h + 'px';
+  }
+  // ---- resizing the selected box from its bottom-right corner
+  function gripHit(e) {
+    if (sel.size !== 1) return null;
+    const n = notes.get([...sel][0]);
+    if (!n || n.kind !== 'box') return null;
+    const o = origin();
+    return Math.hypot(e.clientX - (o.x + V.x + (n.x + n.w) * V.z), e.clientY - (o.y + V.y + (n.y + n.h) * V.z)) <= 12 ? n : null;
+  }
+  function startResize(e, n) {
+    e.preventDefault(); hideTip(); capture(board, e.pointerId);
+    drag = { kind: 'resize', pid: e.pointerId, n, moved: false };
+  }
+  function resizeTo(e) {
+    const d = drag, n = d.n, p = toWorld(e.clientX, e.clientY), f = v => e.shiftKey ? snapTo(v, WMIN, WMAX) : Math.round(v);
+    d.moved = true;
+    setRect(n, n.x, n.y, clamp(f(p.x) - n.x, GRID, WMAX - n.x), clamp(f(p.y) - n.y, GRID, WMAX - n.y));
+  }
+  // boxes are click-through inside; only a band around the border grabs
+  function hitBoxEdge(wx, wy) {
+    const band = Math.min(9 / V.z, 12);
+    let hit = null;
+    notes.forEach(n => {
+      if (n.kind !== 'box') return;
+      const near = wx >= n.x - band && wx <= n.x + n.w + band && wy >= n.y - band && wy <= n.y + n.h + band;
+      const deep = wx > n.x + band && wx < n.x + n.w - band && wy > n.y + band && wy < n.y + n.h - band;
+      if (near && !deep) hit = n;
+    });
+    return hit;
+  }
+  function hoverCursor(e) {
+    let mode = '';
+    if (tool === 'select' && !spaceDown && e.target === board) {
+      const wp = toWorld(e.clientX, e.clientY);
+      mode = gripHit(e) ? 'resize' : hitBoxEdge(wp.x, wp.y) ? 'move' : '';
+    }
+    board.classList.toggle('cur-resize', mode === 'resize');
+    board.classList.toggle('cur-move', mode === 'move');
+  }
+  // ---- text: click to drop a tile and type
+  function textTool(e) {
+    e.preventDefault(); hideTip();
+    const hit = e.target.closest('.note-text');
+    if (hit) { const n = notes.get(+hit.dataset.u); if (n) editNote(n); return; }
+    if (notes.size >= MAX_NOTES) { setStatus('That is a lot of boxes and notes. Delete a few first.'); return; }
+    const p = toWorld(e.clientX, e.clientY);
+    const x = e.shiftKey ? snapTo(p.x, WMIN, WMAX - GRID * 3) : Math.round(p.x), y = e.shiftKey ? snapTo(p.y, WMIN, WMAX - CHIP_H) : Math.round(p.y);
+    const n = makeText(x, y, '', curColor);
+    setTool('select');
+    editNote(n, true);
+    setStatus('Type your text. Enter finishes, Shift+Enter adds a line, an empty tile is discarded.');
+  }
+
+  // ---- moving things: tiles, text and boxes (a box takes its contents along)
+  function beginItemDrag(e, c) {
+    e.preventDefault();
+    if (e.ctrlKey || e.metaKey) {                           // ctrl / cmd + click adds or removes one item
+      const n = new Set(sel);
+      if (n.has(c.u)) n.delete(c.u); else n.add(c.u);
+      setSel(n); announceSel();
+      return;
+    }
+    const group = sel.size > 1 && sel.has(c.u) ? selItems() : null;
+    if (!group) { if (c.kind === 'chip') clearSel(); else setSel(new Set([c.u])); }
+    capture(c.kind === 'chip' ? c.el : board, e.pointerId);
+    const w = toWorld(e.clientX, e.clientY), members = withContents(group || [c]);
+    drag = {
+      kind: 'board', c, members, pid: e.pointerId, sx: e.clientX, sy: e.clientY, moved: false,
+      ox: w.x - c.x, oy: w.y - c.y, starts: members.map(m => ({ c: m, x: m.x, y: m.y }))
+    };
+    members.forEach(m => { m.el.classList.add('drag'); if (m.kind !== 'box') front(m.el); });
+    if (c.kind !== 'box') front(c.el);
+  }
+
+  board.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });   // no middle-click autoscroll
+
+  board.addEventListener('pointerdown', e => {
+    if (e.target.closest('.zoombar, .card, .palette')) return;
+    if (e.target.closest('.note-text.editing')) return;     // let the caret land inside the text being edited
+    if (typing(document.activeElement)) document.activeElement.blur();   // pressing the board leaves the search box, so keys act on the board
+    if (e.pointerType === 'touch') {
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch) return;
+      if (touches.size === 2 && !(drag && drag.kind === 'board')) {   // second finger: pinch to zoom, drag to pan
+        dropEmptyDrag(); startPinch(); return;
+      }
+    }
+    if (e.button === 2 || e.button === 1 || (e.button === 0 && spaceDown)) { startPan(e); return; }   // right-drag (or middle, or Space + drag) pans, even over a tile
+    if (e.button !== 0) return;
+    if (tool === 'box') { startBox(e); return; }
+    if (tool === 'text') { textTool(e); return; }
+    const el = e.target.closest('.on-board, .note-text');
+    if (el) { const c = itemOf(+el.dataset.u); if (c) beginItemDrag(e, c); return; }
+    const grip = gripHit(e);
+    if (grip) { startResize(e, grip); return; }
+    const wp = toWorld(e.clientX, e.clientY), edge = hitBoxEdge(wp.x, wp.y);
+    if (edge) { beginItemDrag(e, edge); return; }
+    if (e.pointerType === 'touch') startPan(e); else startMarquee(e);
+  });
+
+  items.addEventListener('pointerdown', e => {
+    const b = e.target.closest('.chip');
+    if (!b || e.button > 0) return;
+    drag = { kind: 'tray', id: b.dataset.id, btn: b, pid: e.pointerId, sx: e.clientX, sy: e.clientY, moved: false, ghost: null, treeMode: view === 'tree' };
+    try { b.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+  });
+
+  function clearTargets() { chips.forEach(c => c.el.classList.remove('target')); }
+
+  // moves the dragged item (and the rest of its group) so the grabbed point follows the pointer
+  function dragBoardTo(clientX, clientY, snap) {
+    const d = drag, c = d.c, p = toWorld(clientX, clientY);
+    let x = p.x - d.ox, y = p.y - d.oy;
+    if (snap) { x = snapTo(x, WMIN, WMAX - c.el.offsetWidth); y = snapTo(y, WMIN, WMAX - c.el.offsetHeight); }
+    const ps = d.starts.find(s => s.c === c);
+    let dx = x - ps.x, dy = y - ps.y, lox = -Infinity, hix = Infinity, loy = -Infinity, hiy = Infinity;
+    d.starts.forEach(s => {                                 // the whole group has to stay inside the world
+      lox = Math.max(lox, WMIN - s.x); hix = Math.min(hix, WMAX - s.c.el.offsetWidth - s.x);
+      loy = Math.max(loy, WMIN - s.y); hiy = Math.min(hiy, WMAX - s.c.el.offsetHeight - s.y);
+    });
+    dx = clamp(dx, lox, hix); dy = clamp(dy, loy, hiy);
+    d.starts.forEach(s => {
+      s.c.x = s.x + dx; s.c.y = s.y + dy;
+      s.c.el.style.left = s.c.x + 'px'; s.c.el.style.top = s.c.y + 'px';
+    });
+    clearTargets();
+    if (d.members.length === 1 && c.kind === 'chip') { const t = overlapTarget(c); if (t) t.el.classList.add('target'); }   // groups, boxes and text never combine
+  }
+
+  // The tile dragged out of the drawer is drawn exactly like a workbench tile: same size, and snapped to the dots with Shift.
+  function placeGhost(d, cx, cy, snap) {
+    const g = d.ghost, w = d.gw;
+    if (inRect(cx, cy, board.getBoundingClientRect())) {
+      const p = toWorld(cx, cy), o = origin();
+      let x = p.x - w / 2, y = p.y - CHIP_H / 2;
+      if (snap) { x = snapTo(x, WMIN, WMAX - w); y = snapTo(y, WMIN, WMAX - CHIP_H); }
+      else { x = clamp(x, WMIN, WMAX - w); y = clamp(y, WMIN, WMAX - CHIP_H); }
+      g.style.left = (o.x + V.x + x * V.z) + 'px'; g.style.top = (o.y + V.y + y * V.z) + 'px';
+      g.style.transform = 'scale(' + V.z + ')';
+    } else {
+      g.style.left = (cx - w / 2) + 'px'; g.style.top = (cy - CHIP_H / 2) + 'px';
+      g.style.transform = 'none';
+    }
+  }
+
+  function moveMarquee(e) {
+    const d = drag;
+    if (!d.moved) {
+      if (Math.hypot(e.clientX - d.sx, e.clientY - d.sy) < 4) return;
+      d.moved = true; marqueeEl.hidden = false; hideTip();
+    }
+    const a = boardPt(d.sx, d.sy), b = boardPt(e.clientX, e.clientY), bw = board.clientWidth, bh = board.clientHeight;
+    const x0 = clamp(Math.min(a.x, b.x), 0, bw), x1 = clamp(Math.max(a.x, b.x), 0, bw);
+    const y0 = clamp(Math.min(a.y, b.y), 0, bh), y1 = clamp(Math.max(a.y, b.y), 0, bh);
+    marqueeEl.style.left = x0 + 'px'; marqueeEl.style.top = y0 + 'px';
+    marqueeEl.style.width = (x1 - x0) + 'px'; marqueeEl.style.height = (y1 - y0) + 'px';
+    const wa = toWorld(d.sx, d.sy), wb = toWorld(e.clientX, e.clientY);
+    const lx = Math.min(wa.x, wb.x), rx = Math.max(wa.x, wb.x), ty = Math.min(wa.y, wb.y), by = Math.max(wa.y, wb.y);
+    const hit = new Set(d.add ? d.base : []);
+    allItems().forEach(c => {
+      const w = c.el.offsetWidth, h = c.el.offsetHeight;
+      const touches = c.x < rx && c.x + w > lx && c.y < by && c.y + h > ty;
+      const encloses = c.x >= lx && c.y >= ty && c.x + w <= rx && c.y + h <= by;
+      if (c.kind === 'box' ? encloses : touches) hit.add(c.u);       // a box is only picked up when the rectangle wraps all of it
+    });
+    setSel(hit);
+  }
+
+  // holding Shift lights up the grid; pressing or releasing it mid-drag re-snaps right away
+  let shiftDown = false;
+  function setShift(v) {
+    if (v === shiftDown) return;
+    shiftDown = v;
+    board.classList.toggle('snap', v);
+    if (drag && drag.kind === 'board' && drag.moved && drag.lx != null) dragBoardTo(drag.lx, drag.ly, v);
+    if (drag && drag.kind === 'tray' && drag.ghost && drag.lx != null) placeGhost(drag, drag.lx, drag.ly, v);
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Shift' && !typing(e.target)) setShift(true); });
+  document.addEventListener('keyup', e => { if (e.key === 'Shift') setShift(false); });
+  window.addEventListener('blur', () => { setShift(false); spaceDown = false; board.classList.remove('pannable'); });
+
+  function onMove(e) {
+    if (e.pointerType === 'touch' && touches.has(e.pointerId)) {
+      touches.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (pinch) { movePinch(); return; }
+    }
+    if (!drag) { if (e.pointerType === 'mouse') hoverCursor(e); return; }
+    if (e.pointerId !== drag.pid) return;
+    if (drag.kind === 'pan') { V.x = drag.vx + e.clientX - drag.sx; V.y = drag.vy + e.clientY - drag.sy; applyView(); return; }
+    if (drag.kind === 'marquee') { moveMarquee(e); return; }
+    if (drag.kind === 'box') { drawBox(e); return; }
+    if (drag.kind === 'resize') { resizeTo(e); return; }
+    if (drag.treeMode) return;
+    if (!drag.moved && Math.hypot(e.clientX - drag.sx, e.clientY - drag.sy) > 6) {
+      drag.moved = true;
+      if (drag.kind === 'tray') {
+        const e2 = EL.get(drag.id), g = document.createElement('div');
+        g.className = 'chip ghost';
+        g.style.setProperty('--c', 'var(--c-' + e2.cat + ')');
+        g.innerHTML = badgeHTML(e2) + '<span class="nm">' + esc(e2.name) + '</span>';
+        document.body.appendChild(g);
+        drag.gw = Math.max(4, Math.ceil(g.offsetWidth / GRID)) * GRID;   // same whole-cell width the workbench tile will get
+        g.style.width = drag.gw + 'px';
+        drag.ghost = g;
+      }
+    }
+    if (!drag.moved) return;
+    const br = board.getBoundingClientRect();
+    drag.lx = e.clientX; drag.ly = e.clientY;
+    if (drag.kind === 'board') {
+      dragBoardTo(e.clientX, e.clientY, e.shiftKey);
+      tray.classList.toggle('drop', inRect(e.clientX, e.clientY, tray.getBoundingClientRect()));
+    } else {
+      placeGhost(drag, e.clientX, e.clientY, e.shiftKey);
+      board.classList.toggle('over', inRect(e.clientX, e.clientY, br));
+    }
+  }
+
+  function onUp(e) {
+    touches.delete(e.pointerId);
+    if (pinch) {
+      if (touches.size < 2) {
+        pinch = null; save();
+        const rest = [...touches.entries()][0];             // one finger left: carry on panning with it
+        if (rest) { drag = { kind: 'pan', pid: rest[0], sx: rest[1].x, sy: rest[1].y, vx: V.x, vy: V.y }; board.classList.add('panning'); }
+      }
+      return;
+    }
+    if (!drag || e.pointerId !== drag.pid) return;
+    const d = drag; drag = null;
+    if (d.kind === 'pan') { board.classList.remove('panning'); save(); return; }
+    if (d.kind === 'marquee') {
+      marqueeEl.hidden = true;
+      if (!d.moved) { if (!d.add) clearSel(); } else announceSel();
+      return;
+    }
+    if (d.kind === 'box') {
+      d.el.remove();
+      if (d.moved && d.r) {
+        const n = makeBox(d.r.x, d.r.y, d.r.w, d.r.h, curColor);
+        setSel(new Set([n.u])); setTool('select'); save();
+        setStatus('Box added. Drag its edge to move it with everything inside, or its corner to resize.');
+      }
+      return;
+    }
+    if (d.kind === 'resize') { if (d.moved) save(); return; }
+    clearTargets(); tray.classList.remove('drop'); board.classList.remove('over');
+    if (d.kind === 'board') {
+      const c = d.c;
+      d.members.forEach(m => m.el.classList.remove('drag'));
+      if (!d.moved) {
+        const now = performance.now();
+        if (c.kind === 'text') {                            // double-click a text tile to edit it
+          if (lastTap && lastTap.u === c.u && now - lastTap.t < 360) { lastTap = null; editNote(c); } else lastTap = { u: c.u, t: now };
+          return;
+        }
+        if (c.kind === 'box') return;
+        if (lastTap && lastTap.u === c.u && now - lastTap.t < 360) {
+          lastTap = null;
+          if (chips.size < MAX_CHIPS) {
+            const n = makeChip(c.id, 'pop');
+            place(n, c.x + c.el.offsetWidth / 2 + 28, c.y + c.el.offsetHeight / 2 + 28);
+            front(n.el);
+            setStatus('Duplicated ' + EL.get(c.id).name + '. Cloning is fine here.');
+            save();
+          }
+        } else lastTap = { u: c.u, t: now };
+        return;
+      }
+      if (inRect(e.clientX, e.clientY, tray.getBoundingClientRect())) {
+        d.members.forEach(removeItem);
+        setStatus(d.members.length > 1 ? d.members.length + ' items removed from the workbench.' : (c.kind === 'chip' ? 'Returned to the drawer.' : 'Removed.'));
+        updateEmpty(); save();
+        return;
+      }
+      if (d.members.length > 1 || c.kind !== 'chip') { save(); return; }   // groups, boxes and text never combine with anything
+      const t = overlapTarget(c);
+      if (t) combine(c, t); else save();
+    } else {
+      if (d.ghost) d.ghost.remove();
+      d.btn.classList.remove('fresh');
+      if (d.treeMode) { markSeen(d.id); selectTree(d.id); save(); return; }
+      if (!d.moved) {
+        markSeen(d.id);
+        spawn(d.id);
+      } else {
+        const br = board.getBoundingClientRect();
+        if (inRect(e.clientX, e.clientY, br)) {
+          const wp = toWorld(e.clientX, e.clientY);
+          const c = spawn(d.id, wp.x, wp.y, e.shiftKey);
+          if (c) { front(c.el); const t = overlapTarget(c); if (t) combine(c, t); }
+        } else markSeen(d.id);
+      }
+    }
+  }
+
+  function onCancel(e) {
+    touches.delete(e.pointerId);
+    if (pinch && touches.size < 2) pinch = null;
+    if (!drag || e.pointerId !== drag.pid) return;
+    const d = drag; drag = null;
+    clearTargets(); tray.classList.remove('drop'); board.classList.remove('over');
+    if (d.kind === 'pan') board.classList.remove('panning');
+    else if (d.kind === 'marquee') marqueeEl.hidden = true;
+    else if (d.kind === 'box') d.el.remove();
+    else if (d.kind === 'board') { d.members.forEach(m => m.el.classList.remove('drag')); save(); }
+    else if (d.ghost) d.ghost.remove();
+  }
+
+  ['pointermove'].forEach(t => { board.addEventListener(t, onMove); items.addEventListener(t, onMove); });
+  ['pointerup'].forEach(t => { board.addEventListener(t, onUp); items.addEventListener(t, onUp); });
+  ['pointercancel'].forEach(t => { board.addEventListener(t, onCancel); items.addEventListener(t, onCancel); });
+
+  /* ---------- zoom, pan and keyboard on the workbench ---------- */
+  // scroll wheel zooms around the pointer (a trackpad pinch does too); pan with right-drag
+  board.addEventListener('wheel', e => {
+    if (e.target.closest('.card')) return;
+    e.preventDefault();
+    const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? board.clientHeight : 1;
+    const dy = e.deltaY * unit;
+    const p = boardPt(e.clientX, e.clientY);
+    // a mouse notch (about 100) is roughly 1.2x; pinch gestures arrive as small ctrl+wheel deltas, so they get a stronger factor
+    const k = e.ctrlKey ? clamp(dy, -60, 60) * 0.008 : clamp(dy, -120, 120) * 0.0017;
+    if (dy) zoomAt(p.x, p.y, V.z * Math.exp(-k));
+    hideTip(); saveSoon();
+  }, { passive: false });
+
+  const mid = () => ({ x: board.clientWidth / 2, y: board.clientHeight / 2 });
+  function fitView() {
+    const all = allItems();
+    if (!all.length) { V = { x: 0, y: 0, z: 1 }; applyView(); save(); return; }
+    let x0 = Infinity, y0 = Infinity, x1 = -Infinity, y1 = -Infinity;
+    all.forEach(c => { x0 = Math.min(x0, c.x); y0 = Math.min(y0, c.y); x1 = Math.max(x1, c.x + c.el.offsetWidth); y1 = Math.max(y1, c.y + c.el.offsetHeight); });
+    const padX = 48, padTop = 48, padBottom = 72, bw = board.clientWidth, bh = board.clientHeight;
+    const z = clamp(Math.min((bw - padX * 2) / (x1 - x0), (bh - padTop - padBottom) / (y1 - y0), 1.25), ZMIN, ZMAX);
+    V.z = z; V.x = (bw - (x1 - x0) * z) / 2 - x0 * z; V.y = padTop + (bh - padTop - padBottom - (y1 - y0) * z) / 2 - y0 * z;
+    applyView(); save();
+  }
+  zIn.addEventListener('click', () => { const m = mid(); zoomAt(m.x, m.y, V.z * 1.25); save(); });
+  zOut.addEventListener('click', () => { const m = mid(); zoomAt(m.x, m.y, V.z / 1.25); save(); });
+  zReset.addEventListener('click', () => { const m = mid(); zoomAt(m.x, m.y, 1); save(); });
+  zFit.addEventListener('click', fitView);
+
+  const typing = t => !!t && (t.isContentEditable || /^(INPUT|TEXTAREA|SELECT)$/.test(t.tagName));
+  // after a mouse click a button gives focus back, so Space can pan and Delete can remove (keyboard users keep their focus)
+  document.addEventListener('click', e => {
+    if (e.detail > 0) { const b = e.target.closest && e.target.closest('button'); if (b && b === document.activeElement) b.blur(); }
+  });
+  document.addEventListener('keydown', e => {
+    if (typing(e.target) || !guideEl.hidden || view !== 'bench') return;
+    if (e.key === ' ' && !/^(BUTTON|A|SUMMARY)$/.test(e.target.tagName)) {
+      e.preventDefault();
+      if (!spaceDown) { spaceDown = true; board.classList.add('pannable'); }
+    } else if (e.key === 'Escape') {
+      if (tool !== 'select') setTool('select'); else clearSel();
+    } else if ((e.key === 'Delete' || e.key === 'Backspace') && sel.size) {
+      e.preventDefault();
+      const n = sel.size; selItems().forEach(removeItem); sel.clear(); refreshTools();
+      setStatus(n === 1 ? 'Removed 1 item.' : 'Removed ' + n + ' items.'); updateEmpty(); save();
+    } else if ((e.ctrlKey || e.metaKey) && (e.key === 'a' || e.key === 'A') && allItems().length) {
+      e.preventDefault(); setSel(new Set(allItems().map(i => i.u))); announceSel();
+    } else if (!e.ctrlKey && !e.metaKey && !e.altKey && /^[vbt]$/i.test(e.key)) {
+      setTool({ v: 'select', b: 'box', t: 'text' }[e.key.toLowerCase()]);
+    }
+  });
+  document.addEventListener('keyup', e => { if (e.key === ' ') { spaceDown = false; board.classList.remove('pannable'); } });
+
+  // keyboard users: Enter on a drawer item drops it on the board
+  items.addEventListener('click', e => {
+    if (e.detail !== 0) return;
+    const b = e.target.closest('.chip');
+    if (!b) return;
+    b.classList.remove('fresh');
+    if (view === 'tree') selectTree(b.dataset.id); else spawn(b.dataset.id);
+  });
+  [board, items].forEach(el => el.addEventListener('contextmenu', e => e.preventDefault()));
+
+  /* ---------- drawer controls ---------- */
+  filtersEl.addEventListener('click', e => {
+    const b = e.target.closest('.fchip');
+    if (!b) return;
+    if (b.dataset.tier !== undefined) S.tier = b.dataset.tier === 'all' ? 'all' : +b.dataset.tier; else S.cat = b.dataset.cat;
+    renderFilters(); renderTray();
+  });
+
+  /* The filter strip scrolls sideways with an ordinary mouse wheel, and can also be dragged like a touch strip. */
+  filtersEl.addEventListener('wheel', e => {
+    if (filtersEl.scrollWidth <= filtersEl.clientWidth) return;
+    const d = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY;
+    if (!d) return;
+    e.preventDefault();
+    filtersEl.scrollLeft += d * (e.deltaMode === 1 ? 16 : 1);
+  }, { passive: false });
+  let fdrag = null, fsuppress = false;
+  filtersEl.addEventListener('pointerdown', e => {
+    fsuppress = false;
+    if (e.pointerType !== 'mouse' || e.button !== 0 || filtersEl.scrollWidth <= filtersEl.clientWidth) return;
+    fdrag = { x: e.clientX, left: filtersEl.scrollLeft, moved: false, pid: e.pointerId };
+  });
+  filtersEl.addEventListener('pointermove', e => {
+    if (!fdrag || e.pointerId !== fdrag.pid) return;
+    const dx = e.clientX - fdrag.x;
+    if (!fdrag.moved && Math.abs(dx) > 5) { fdrag.moved = true; try { filtersEl.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ } filtersEl.classList.add('dragging'); }
+    if (fdrag.moved) filtersEl.scrollLeft = fdrag.left - dx;
+  });
+  const endFilterDrag = e => {
+    if (!fdrag || e.pointerId !== fdrag.pid) return;
+    if (fdrag.moved) fsuppress = true;                    // the click that follows a drag must not pick a filter
+    fdrag = null; filtersEl.classList.remove('dragging');
+  };
+  filtersEl.addEventListener('pointerup', endFilterDrag);
+  filtersEl.addEventListener('pointercancel', endFilterDrag);
+  filtersEl.addEventListener('click', e => { if (fsuppress) { e.stopImmediatePropagation(); e.preventDefault(); fsuppress = false; } }, true);
+  $('q').addEventListener('input', e => { S.q = e.target.value; renderTray(); });
+  $('sort').addEventListener('click', () => {
+    S.sort = { new: 'az', az: 'type', type: 'tier', tier: 'new' }[S.sort]; renderFilters(); renderTray(); save();
+  });
+  $('clear').addEventListener('click', () => {
+    allItems().forEach(removeItem);
+    setStatus('Workbench cleared. Nothing was lost but the clutter.');
+    updateEmpty(); save();
+  });
+
+  /* ---------- hint ---------- */
+  $('hint').addEventListener('click', () => {
+    if (view !== 'bench') setView('bench');
+    const cands = [];
+    RECIPES.forEach((res, key) => {
+      const [a, b] = key.split('+');
+      if (discSet.has(a) && discSet.has(b) && res.some(r => !discSet.has(r))) cands.push([a, b]);
+    });
+    if (!cands.length) { setStatus('Nothing left to hint. You have found everything.'); return; }
+    const [a, b] = pick(cands);
+    S.hints++;
+    hinted = new Set([a, b]);
+    S.cat = 'all'; S.tier = 'all'; S.q = ''; $('q').value = '';
+    renderFilters(); renderTray();
+    const first = items.querySelector('.hinted');
+    if (first) first.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+    setStatus('Hint: try ' + EL.get(a).name + (a === b ? ' with another one of itself.' : ' with ' + EL.get(b).name + '.'));
+    setTimeout(() => { hinted = new Set(); items.querySelectorAll('.hinted').forEach(n => n.classList.remove('hinted')); }, 6500);
+    save();
+  });
+
+  /* ---------- field guide ---------- */
+  function renderGuide() {
+    const n = S.disc.length;
+    $('g-rank').textContent = rankFor(n);
+    $('g-sum').textContent = n + ' of ' + TOTAL + ' discovered / ' + S.tries + ' combos tried / ' + S.fails + ' duds / ' + S.hints + ' hints';
+    const totals = {}, got = {};
+    W.list.forEach(e => { totals[e.cat] = (totals[e.cat] || 0) + 1; });
+    S.disc.forEach(id => { const c = EL.get(id).cat; got[c] = (got[c] || 0) + 1; });
+    $('g-cats').innerHTML = CATS.map(c =>
+      '<button class="gcat" type="button" data-cat="' + c.id + '" aria-pressed="' + (gcat === c.id) + '" style="--c:var(--c-' + c.id + ')"><span>' + pxi(CAT_ICON[c.id], 'var(--c-' + c.id + ')') + ' ' + c.name +
+      '</span><span class="gbar"><i style="width:' + ((got[c.id] || 0) / totals[c.id] * 100) + '%"></i></span><span class="gnum">' + (got[c.id] || 0) + '/' + totals[c.id] + '</span></button>'
+    ).join('');
+    const ids = S.disc.filter(id => gcat === 'all' || EL.get(id).cat === gcat).sort((a, b) => EL.get(a).name.localeCompare(EL.get(b).name));
+    $('g-list').innerHTML = ids.map(id => {
+      const e = EL.get(id), r = e.rec[0];
+      const how = r ? EL.get(r[0]).name + ' + ' + EL.get(r[1]).name : 'Given to you';
+      return '<li style="--c:var(--c-' + e.cat + ')">' + badgeHTML(e) + '<div><b>' + esc(e.name) + '</b><span class="how">' + esc(how) + '</span><p>' + esc(e.flavor) + '</p></div></li>';
+    }).join('');
+    renderReset(false);
+  }
+  function renderReset(confirming) {
+    $('g-reset').innerHTML = confirming
+      ? '<span>Erase every discovery and start over?</span><button class="btn danger" type="button" id="doReset">Erase everything</button><button class="btn" type="button" id="noReset">Keep playing</button>'
+      : '<button class="btn" type="button" id="askReset">Reset progress</button><span>Your game saves in this browser automatically.</span>';
+  }
+  function openGuide() { renderGuide(); guideEl.hidden = false; $('guideClose').focus(); }
+  function closeGuide() { guideEl.hidden = true; $('guideBtn').focus(); }
+  $('guideBtn').addEventListener('click', openGuide);
+  $('guideClose').addEventListener('click', closeGuide);
+  guideEl.addEventListener('click', e => { if (e.target === guideEl) closeGuide(); });
+  document.addEventListener('keydown', e => { if (e.key === 'Escape' && !guideEl.hidden) closeGuide(); });
+  $('g-cats').addEventListener('click', e => {
+    const b = e.target.closest('.gcat');
+    if (!b) return;
+    gcat = gcat === b.dataset.cat ? 'all' : b.dataset.cat; renderGuide();
+  });
+  $('g-reset').addEventListener('click', e => {
+    const id = e.target.id;
+    if (id === 'askReset') renderReset(true);
+    else if (id === 'noReset') renderReset(false);
+    else if (id === 'doReset') {
+      allItems().forEach(removeItem);
+      S = fresh(); sync(); gcat = 'all'; hinted = new Set(); failStreak = 0; treeSel = null; treeHist = [];
+      sel.clear(); V = { x: 0, y: 0, z: 1 }; applyView();
+      $('q').value = '';
+      seedBoard(); refreshAll(); save(); closeGuide();
+      setStatus('Fresh start. Ten elements, infinite regrets.');
+    }
+  });
+
+  /* ---------- icons on the controls ---------- */
+  function decorate() {
+    $('hint').innerHTML = pxi('bulb') + '<span class="lbl">Hint</span>';
+    $('guideBtn').innerHTML = pxi('doc') + '<span class="lbl">Field guide</span>';
+    $('clear').innerHTML = pxi('cross') + '<span class="lbl">Clear board</span>';
+    $('tabBench').innerHTML = pxi('flask') + 'Workbench';
+    $('tabTree').innerHTML = pxi('branch', 'var(--c-eng)') + 'Tree';
+    $('toolSelect').innerHTML = pxi('pointer') + 'Selection';
+    $('toolBox').innerHTML = pxi('grid') + 'Box';
+    $('toolText').innerHTML = pxi('pencil') + 'Text';
+    swatchesEl.innerHTML = PALETTE.map((p, i) => '<button type="button" class="sw" data-i="' + i + '" style="--pc:' + p[1] + '" aria-label="' + p[0] + '" title="' + p[0] + '" aria-pressed="false"></button>').join('');
+    refreshTools();
+    $('rankIcon').innerHTML = pxi('trophy');
+    $('tmAnc').innerHTML = pxi('branch') + 'Family tree';
+    $('tmTier').innerHTML = pxi('server') + 'All tiers';
+  }
+
+  /* ---------- tree tab ---------- */
+  const treePane = $('treepane'), treeBody = $('treeBody');
+  let view = 'bench', treeMode = 'anc', treeSel = null, treeHist = [];
+
+  // which discovered things each element feeds into
+  const USES = new Map();
+  RECIPES.forEach((res, key) => {
+    key.split('+').forEach(x => {
+      if (!USES.has(x)) USES.set(x, []);
+      res.forEach(r => { if (!USES.get(x).includes(r)) USES.get(x).push(r); });
+    });
+  });
+  // shortest recipe depth of everything, starting from the ten starters
+  const SDEPTH = {};
+  STARTERS.forEach(id => { SDEPTH[id] = 0; });
+  for (let pass = 0; pass < 80; pass++) {
+    let changed = false;
+    RECIPES.forEach((res, key) => {
+      const [a, b] = key.split('+');
+      if (SDEPTH[a] === undefined || SDEPTH[b] === undefined) return;
+      const d = 1 + Math.max(SDEPTH[a], SDEPTH[b]);
+      res.forEach(r => { if (SDEPTH[r] === undefined || d < SDEPTH[r]) { SDEPTH[r] = d; changed = true; } });
+    });
+    if (!changed) break;
+  }
+  const MAXTIER = Math.max.apply(null, Object.values(SDEPTH));
+  const TIER_TOTAL = {};
+  W.list.forEach(e => { const t = SDEPTH[e.id]; TIER_TOTAL[t] = (TIER_TOTAL[t] || 0) + 1; });
+
+  const NODE_W = 96, NODE_H = 68, CELL = 108, ROWH = 104, PADX = 8, PADY = 8;
+
+  function layoutAncestry(rootId) {
+    const rank = {}, order = [], edges = [], seenE = new Set();
+    (function walk(id) {
+      if (rank[id] !== undefined) return;
+      rank[id] = 0; order.push(id);
+      const h = EL.get(id).rec[0];
+      if (!h) return;
+      h.forEach(p => {
+        const k = id + '>' + p;
+        if (!seenE.has(k)) { seenE.add(k); edges.push([id, p]); }
+        walk(p);
+      });
+    })(rootId);
+    for (let i = 0; i < 200; i++) {
+      let ch = false;
+      edges.forEach(([c, p]) => { if (rank[p] < rank[c] + 1) { rank[p] = rank[c] + 1; ch = true; } });
+      if (!ch) break;
+    }
+    let maxNon = 0;
+    order.forEach(id => { if (!EL.get(id).starter) maxNon = Math.max(maxNon, rank[id]); });
+    order.forEach(id => { if (EL.get(id).starter) rank[id] = order.length === 1 ? 0 : maxNon + 1; });
+    const maxRank = Math.max.apply(null, order.map(id => rank[id]));
+    const rows = [];
+    for (let r = 0; r <= maxRank; r++) rows.push([]);
+    order.forEach(id => rows[rank[id]].push(id));
+    const kids = {}, pars = {};
+    edges.forEach(([c, p]) => { (kids[p] = kids[p] || []).push(c); (pars[c] = pars[c] || []).push(p); });
+    const maxLen = Math.max.apply(null, rows.map(r => r.length));
+    const idx = {};
+    const reindex = () => rows.forEach(r => r.forEach((id, i) => { idx[id] = i; }));
+    const xc = id => PADX + (maxLen - rows[rank[id]].length) * CELL / 2 + idx[id] * CELL + CELL / 2;
+    const bary = (id, nb) => { const a = nb[id]; return a && a.length ? a.reduce((s, x) => s + xc(x), 0) / a.length : xc(id); };
+    reindex();
+    for (let it = 0; it < 6; it++) {
+      for (let r = 1; r <= maxRank; r++) {
+        const keyed = rows[r].map(id => [id, bary(id, kids)]);
+        keyed.sort((a, b) => a[1] - b[1]);
+        rows[r] = keyed.map(k => k[0]); reindex();
+      }
+      for (let r = maxRank - 1; r >= 0; r--) {
+        const keyed = rows[r].map(id => [id, bary(id, pars)]);
+        keyed.sort((a, b) => a[1] - b[1]);
+        rows[r] = keyed.map(k => k[0]); reindex();
+      }
+    }
+    return { rank, edges, order, xc, width: maxLen * CELL + PADX * 2, height: maxRank * ROWH + NODE_H + PADY * 2 };
+  }
+
+  const miniHTML = id => { const e = EL.get(id); return '<button type="button" class="mini" data-id="' + id + '" style="--c:var(--c-' + e.cat + ')">' + badgeHTML(e) + esc(e.name) + '</button>'; };
+
+  function renderAncestry() {
+    const id = treeSel, e = EL.get(id), L = layoutAncestry(id);
+    const how = e.rec[0];
+    let h = '<div class="tree-head" style="--c:var(--c-' + e.cat + ')">' + badgeHTML(e, true) + '<div><h3>' + esc(e.name) + '</h3><p>' + esc(e.flavor) + '</p><div class="tree-meta"><span>Tier ' + SDEPTH[id] +
+      '</span><span>/</span><span>' + esc(CAT_NAME[e.cat]) + '</span>' + (how ? '<span>/</span><span>made from</span>' + miniHTML(how[0]) + '<span>+</span>' + miniHTML(how[1]) : '<span>/</span><span>a starting element</span>') + '</div></div></div>';
+
+    h += '<div class="tree-scroll"><div class="tree-canvas" style="width:' + L.width + 'px;height:' + L.height + 'px"><svg class="edges" width="' + L.width + '" height="' + L.height + '" aria-hidden="true">';
+    L.edges.forEach(([c, p]) => {
+      const x1 = L.xc(c), y1 = PADY + L.rank[c] * ROWH + NODE_H, x2 = L.xc(p), y2 = PADY + L.rank[p] * ROWH, my = (y1 + y2) / 2;
+      h += '<path d="M' + x1 + ' ' + y1 + 'C' + x1 + ' ' + my + ' ' + x2 + ' ' + my + ' ' + x2 + ' ' + y2 + '"/>';
+    });
+    h += '</svg>';
+    L.order.forEach(nid => {
+      const n = EL.get(nid);
+      h += '<button type="button" class="tnode' + (nid === id ? ' root' : '') + (n.starter ? ' start' : '') + '" data-id="' + nid + '" style="--c:var(--c-' + n.cat + ');left:' + (L.xc(nid) - NODE_W / 2) + 'px;top:' + (PADY + L.rank[nid] * ROWH) + 'px">' +
+        badgeHTML(n) + '<span class="nm">' + esc(n.name) + '</span></button>';
+    });
+    h += '</div></div>';
+
+    const steps = L.order.filter(x => !EL.get(x).starter).sort((a, b) => L.rank[b] - L.rank[a]);
+    if (steps.length) {
+      h += '<details class="steps"><summary>Steps to make it (' + steps.length + ')</summary><ol>' + steps.map(x => {
+        const r = EL.get(x).rec[0];
+        return '<li><b>' + esc(EL.get(r[0]).name) + '</b> + <b>' + esc(EL.get(r[1]).name) + '</b> = ' + esc(EL.get(x).name) + '</li>';
+      }).join('') + '</ol></details>';
+    }
+
+    const uses = USES.get(id) || [];
+    const found = uses.filter(r => discSet.has(r)), hidden = uses.length - found.length;
+    h += '<div class="sect"><h4>Leads to</h4><div class="chiprow">';
+    if (!uses.length) h += '<span class="tier-locked">Nothing yet. This one is an end of the line.</span>';
+    found.forEach(r => { h += miniHTML(r); });
+    if (hidden > 0) h += '<span class="mini mystery">' + pxi('question') + hidden + ' undiscovered</span>';
+    h += '</div></div>';
+    treeBody.innerHTML = h;
+    treeBody.scrollTop = 0;
+    const sc = treeBody.querySelector('.tree-scroll');
+    if (sc && sc.scrollWidth > sc.clientWidth) sc.scrollLeft = (sc.scrollWidth - sc.clientWidth) / 2;
+  }
+
+  function renderTiers() {
+    const byT = {};
+    let top = 0;
+    S.disc.forEach(id => { const t = SDEPTH[id]; (byT[t] = byT[t] || []).push(id); if (t > top) top = t; });
+    let h = '';
+    for (let t = 0; t <= Math.min(top + 1, MAXTIER); t++) {
+      const list = byT[t] || [];
+      const hiddenN = TIER_TOTAL[t] - list.length;
+      h += '<div class="tier"><h4>Tier ' + t + ' / ' + list.length + ' of ' + TIER_TOTAL[t] + '</h4><div class="tier-row">';
+      list.forEach(id => {
+        const e = EL.get(id);
+        h += '<button type="button" class="tile" data-id="' + id + '" style="--c:var(--c-' + e.cat + ')" aria-label="' + esc(e.name) + '">' + badgeHTML(e) + '</button>';
+      });
+      if (hiddenN > 0) h += '<span class="tile mystery">' + pxi('question') + hiddenN + ' to find</span>';
+      h += '</div></div>';
+    }
+    if (top + 1 < MAXTIER) h += '<p class="tier-locked">' + (MAXTIER - top - 1) + ' more tiers are waiting beyond this.</p>';
+    treeBody.innerHTML = h;
+    treeBody.scrollTop = 0;
+  }
+
+  function renderTree() {
+    if (!treeSel || !discSet.has(treeSel)) treeSel = S.disc[S.disc.length - 1];
+    $('tmAnc').setAttribute('aria-pressed', treeMode === 'anc');
+    $('tmTier').setAttribute('aria-pressed', treeMode === 'tier');
+    $('treeBack').disabled = !(treeMode === 'anc' && treeHist.length);
+    if (treeMode === 'anc') renderAncestry(); else renderTiers();
+  }
+
+  function selectTree(id, push) {
+    if (!EL.has(id) || !discSet.has(id)) return;
+    if (push !== false && treeSel && treeSel !== id) treeHist.push(treeSel);
+    if (treeHist.length > 40) treeHist.shift();
+    treeSel = id; treeMode = 'anc';
+    renderTree();
+  }
+
+  function setView(v) {
+    view = v;
+    board.hidden = v !== 'bench';
+    treePane.hidden = v !== 'tree';
+    $('tabBench').setAttribute('aria-selected', v === 'bench');
+    $('tabTree').setAttribute('aria-selected', v === 'tree');
+    $('trayNote').hidden = v !== 'tree';
+    tray.classList.toggle('treemode', v === 'tree');
+    toolsEl.hidden = v !== 'bench';
+    if (v === 'tree') renderTree(); else clampAll();
+  }
+
+  $('tabBench').addEventListener('click', () => setView('bench'));
+  $('tabTree').addEventListener('click', () => setView('tree'));
+  $('tmAnc').addEventListener('click', () => { treeMode = 'anc'; renderTree(); });
+  $('tmTier').addEventListener('click', () => { treeMode = 'tier'; renderTree(); });
+  $('treeBack').addEventListener('click', () => { const id = treeHist.pop(); if (id) { treeSel = id; treeMode = 'anc'; renderTree(); } });
+  treeBody.addEventListener('click', e => {
+    const b = e.target.closest('[data-id]');
+    if (b) selectTree(b.dataset.id);
+  });
+
+  /* ---------- recipe tooltips ---------- */
+  const tip = document.createElement('div');
+  tip.className = 'tip'; tip.hidden = true; tip.setAttribute('role', 'tooltip');
+  document.body.appendChild(tip);
+  const TIP_SEL = '.items .chip[data-id], .on-board, .tnode, .tile[data-id], .mini[data-id]';
+  const TIP_DELAY = 1000;   // ms the pointer has to rest on an item before its tooltip appears
+  let tipEl = null, tipTimer = 0;
+
+  const tipIdOf = el => el.classList.contains('on-board') ? (chips.get(+el.dataset.u) || {}).id : el.dataset.id;
+  function tipHTML(id) {
+    const e = EL.get(id), r = e.rec[0];
+    const ing = x => { const n = EL.get(x); return '<span class="ing" style="--c:var(--c-' + n.cat + ')">' + badgeHTML(n) + esc(n.name) + '</span>'; };
+    return '<div class="t-head"><b>' + esc(e.name) + '</b><span class="t-cat">' + esc(CAT_NAME[e.cat]) + '</span></div>' +
+      '<div class="t-recipe">' + (r ? ing(r[0]) + '<span class="plus">+</span>' + ing(r[1]) : '<span>Starting element</span>') + '</div>' +
+      '<div class="t-flavor">' + esc(e.flavor) + '</div>';
+  }
+  function showTip(el) {
+    const id = tipIdOf(el);
+    if (!id || !EL.has(id) || !el.isConnected) return;
+    tip.innerHTML = tipHTML(id);
+    tip.hidden = false;
+    const r = el.getBoundingClientRect(), tw = tip.offsetWidth, th = tip.offsetHeight, m = 8;
+    const x = Math.max(m, Math.min(window.innerWidth - tw - m, r.left + r.width / 2 - tw / 2));
+    let y = r.bottom + 8;
+    if (y + th > window.innerHeight - m) y = r.top - th - 8;
+    tip.style.left = x + 'px';
+    tip.style.top = Math.max(m, y) + 'px';
+  }
+  function hideTip() { clearTimeout(tipTimer); tipEl = null; tip.hidden = true; }
+
+  document.addEventListener('pointerover', e => {
+    if (e.pointerType && e.pointerType !== 'mouse') return;
+    if (drag) return;
+    const el = e.target.closest ? e.target.closest(TIP_SEL) : null;
+    if (el === tipEl) return;
+    hideTip();
+    if (!el) return;
+    tipEl = el;
+    tipTimer = setTimeout(() => { if (tipEl === el && !drag) showTip(el); }, TIP_DELAY);
+  });
+  document.addEventListener('pointerdown', hideTip, true);
+  document.documentElement.addEventListener('mouseleave', hideTip);
+  window.addEventListener('blur', hideTip);
+  window.addEventListener('resize', hideTip);
+  items.addEventListener('scroll', hideTip);
+  document.addEventListener('focusin', e => {
+    const el = e.target.closest ? e.target.closest(TIP_SEL) : null;
+    if (el && e.target.matches && e.target.matches(':focus-visible')) { hideTip(); tipEl = el; showTip(el); }
+  });
+  document.addEventListener('focusout', hideTip);
+
+  /* ---------- boot ---------- */
+  function seedBoard() {
+    const bw = board.clientWidth, bh = board.clientHeight;
+    const k = makeChip('keyboard'), l = makeChip('logic');
+    place(k, bw * 0.3, bh * 0.5);
+    place(l, bw * 0.7, bh * 0.5);
+  }
+
+  function boot() {
+    S = load() || fresh();
+    sync();
+    if (S.view) V = S.view;
+    applyView();
+    const saved = S.board; S.board = [];
+    if (saved.length) {
+      saved.forEach(b => { const c = makeChip(b.id); c.x = b.x; c.y = b.y; c.el.style.left = b.x + 'px'; c.el.style.top = b.y + 'px'; });
+      clampAll();
+    } else if (S.disc.length <= STARTERS.length) {
+      seedBoard();
+    }
+    (S.notes || []).forEach(o => { if (o.k === 'b') makeBox(o.x, o.y, o.w, o.h, o.c); else makeText(o.x, o.y, o.t, o.c); });
+    $('q').value = '';
+    decorate();
+    refreshAll();
+    if (!chips.size && S.disc.length > STARTERS.length) setStatus('Welcome back. ' + S.disc.length + ' of ' + TOTAL + ' discovered.');
+    else if (saved.length) setStatus('Welcome back. ' + S.disc.length + ' of ' + TOTAL + ' discovered.');
+    else setStatus('Combine two elements. The drawer on the ' + (window.innerWidth <= 760 ? 'bottom' : 'right') + ' holds everything you have found. Hold Shift while dragging to snap to the dots.');
+  }
+
+  window.addEventListener('resize', clampAll);
+  boot();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(clampAll);
+})();
+
+</script>
+
+</body></html>
