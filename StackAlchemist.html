@@ -319,6 +319,17 @@ button { font: inherit; color: inherit; }
 .glist p { margin: 4px 0 0; font-size: 13px; color: var(--ink2); }
 .reset-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; border-top: 1px solid var(--line); padding-top: 12px; font-size: 13px; color: var(--ink2); }
 
+.savebox { border: 1px solid var(--line); border-radius: 10px; background: var(--raise); padding: 10px 12px; display: grid; gap: 8px; font-size: 13px; color: var(--ink2); }
+.sv-head, .sv-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
+.sv-head { justify-content: space-between; }
+.sv-head b, .sv-row b { color: var(--ink); font-weight: 700; }
+.sv-opt { display: flex; gap: 8px; align-items: center; color: var(--ink); cursor: pointer; }
+.sv-code { width: 100%; box-sizing: border-box; resize: vertical; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); color: var(--ink); font: 500 12.5px/1.5 var(--f-mono); letter-spacing: .02em; word-break: break-all; }
+.sv-code:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+.sv-msg { font: 600 12px var(--f-mono); color: var(--ink2); min-width: 0; overflow-wrap: anywhere; }
+.sv-msg.bad { color: var(--c-sec); }
+.sv-note { margin: 0; font-size: 12.5px; }
+
 @keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 @keyframes drop { from { transform: translateY(-14px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
@@ -408,6 +419,7 @@ button { font: inherit; color: inherit; }
       </div>
       <button class="btn" id="guideClose" type="button">Close</button>
     </div>
+    <div class="savebox" id="g-save"></div>
     <div class="gcats" id="g-cats"></div>
     <ul class="glist" id="g-list"></ul>
     <div class="reset-row" id="g-reset"></div>
@@ -1643,10 +1655,11 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
   function sync() { discSet = new Set(S.disc); seenSet = new Set(S.seen); }
 
   function load() {
+    try { const raw = localStorage.getItem(KEY); return raw ? parseSave(JSON.parse(raw)) : null; } catch (e) { return null; }
+  }
+  // turns any save-shaped object (from storage or from a save code) into a clean state, or null
+  function parseSave(o) {
     try {
-      const raw = localStorage.getItem(KEY);
-      if (!raw) return null;
-      const o = JSON.parse(raw);
       if (!o || !Array.isArray(o.disc)) return null;
       const f = fresh();
       f.disc = o.disc.filter(id => EL.has(id));
@@ -1657,22 +1670,26 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       if (['new', 'az', 'type', 'tier'].includes(o.sort)) f.sort = o.sort;
       f.notes = (Array.isArray(o.notes) ? o.notes : []).filter(n => n && (n.k === 'b' || n.k === 't') && isFinite(n.x) && isFinite(n.y) &&
         Number.isInteger(n.c) && n.c >= 0 && n.c < 16 &&
-        (n.k === 't' ? typeof n.t === 'string' && n.t.length > 0 : isFinite(n.w) && isFinite(n.h) && n.w >= 1 && n.h >= 1)).slice(0, 80);
+        (n.k === 't' ? typeof n.t === 'string' && n.t.length > 0 : isFinite(n.w) && isFinite(n.h) && n.w >= 1 && n.h >= 1)).slice(0, 80)
+        .map(n => n.k === 't' ? Object.assign({}, n, { t: n.t.slice(0, 400) }) : n);
       if (o.view && isFinite(o.view.x) && isFinite(o.view.y) && isFinite(o.view.z)) f.view = { x: +o.view.x, y: +o.view.y, z: Math.max(0.25, Math.min(3, +o.view.z)) };
       return f;
     } catch (e) { return null; }
   }
-  function save() {
-    try {
-      localStorage.setItem(KEY, JSON.stringify({
+  function snapshot() {
+    {
+      return {
         disc: S.disc, seen: [...seenSet], tries: S.tries, fails: S.fails, hints: S.hints, sort: S.sort,
         view: { x: Math.round(V.x), y: Math.round(V.y), z: Math.round(V.z * 1000) / 1000 },
         board: [...chips.values()].map(c => ({ id: c.id, x: Math.round(c.x), y: Math.round(c.y) })),
         notes: [...notes.values()].map(n => n.kind === 'box'
           ? { k: 'b', x: Math.round(n.x), y: Math.round(n.y), w: Math.round(n.w), h: Math.round(n.h), c: n.color }
           : { k: 't', x: Math.round(n.x), y: Math.round(n.y), c: n.color, t: n.text })
-      }));
-    } catch (e) { /* storage unavailable: the game still works */ }
+      };
+    }
+  }
+  function save() {
+    try { localStorage.setItem(KEY, JSON.stringify(snapshot())); } catch (e) { /* storage unavailable: the game still works */ }
   }
 
   const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
@@ -2605,7 +2622,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       ? '<span>Erase every discovery and start over?</span><button class="btn danger" type="button" id="doReset">Erase everything</button><button class="btn" type="button" id="noReset">Keep playing</button>'
       : '<button class="btn" type="button" id="askReset">Reset progress</button><span>Your game saves in this browser automatically.</span>';
   }
-  function openGuide() { renderGuide(); guideEl.hidden = false; $('guideClose').focus(); }
+  function openGuide() { saveMode = null; savePending = null; saveSeq++; renderGuide(); renderSave(); guideEl.hidden = false; $('guideClose').focus(); }
   function closeGuide() { guideEl.hidden = true; $('guideBtn').focus(); }
   $('guideBtn').addEventListener('click', openGuide);
   $('guideClose').addEventListener('click', closeGuide);
@@ -2629,6 +2646,232 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       setStatus('Fresh start. Ten elements, infinite regrets.');
     }
   });
+
+  /* ---------- save codes ---------- */
+  // SA1-XXXXX-XXXXX-...  = "SA" + format digit, then Crockford base32 of: [flags][crc24][body or deflated body]
+  // Elements are stored by position in the element list, so new elements may only ever be appended to the data files.
+  const B32 = '0123456789ABCDEFGHJKMNPQRSTVWXYZ';
+  const SORTS = ['new', 'az', 'type', 'tier'];
+  const IDX = new Map(W.list.map((e, i) => [e.id, i]));
+  const NSIZE = Math.ceil(TOTAL / 8);
+
+  function crc24(b) {
+    let c = ~0;
+    for (let i = 0; i < b.length; i++) { c ^= b[i]; for (let k = 0; k < 8; k++) c = (c >>> 1) ^ (0xEDB88320 & -(c & 1)); }
+    return (~c) & 0xFFFFFF;
+  }
+  function b32enc(bytes) {
+    let out = '', acc = 0, bits = 0;
+    for (const v of bytes) { acc = (acc << 8) | v; bits += 8; while (bits >= 5) { out += B32[(acc >>> (bits - 5)) & 31]; bits -= 5; } acc &= (1 << bits) - 1; }
+    if (bits) out += B32[(acc << (5 - bits)) & 31];
+    return out;
+  }
+  function b32dec(s) {
+    const out = []; let acc = 0, bits = 0;
+    for (const ch of s) {
+      const v = B32.indexOf(ch);
+      if (v < 0) throw new Error('That code has a character that does not belong in one (' + ch + ').');
+      acc = (acc << 5) | v; bits += 5;
+      if (bits >= 8) { out.push((acc >>> (bits - 8)) & 255); bits -= 8; acc &= (1 << bits) - 1; }
+    }
+    return Uint8Array.from(out);
+  }
+  async function streamBytes(bytes, Ctor) {
+    const s = new Blob([bytes]).stream().pipeThrough(new Ctor('deflate-raw'));
+    return new Uint8Array(await new Response(s).arrayBuffer());
+  }
+
+  function Writer() {
+    const a = [];
+    return {
+      u8(v) { a.push(v & 255); },
+      vu(v) { v = Math.max(0, Math.floor(v)); while (v >= 128) { a.push((v % 128) | 128); v = Math.floor(v / 128); } a.push(v); },
+      vi(v) { v = Math.round(v); this.vu(v < 0 ? -2 * v - 1 : 2 * v); },
+      raw(b) { for (const x of b) a.push(x); },
+      out() { return Uint8Array.from(a); }
+    };
+  }
+  function Reader(b) {
+    let p = 0;
+    const need = n => { if (p + n > b.length) throw new Error('That code is cut short. Did part of it get left behind?'); };
+    return {
+      u8() { need(1); return b[p++]; },
+      vu() { let v = 0, m = 1, x; do { need(1); x = b[p++]; v += (x & 127) * m; m *= 128; if (m > 2 ** 42) throw new Error('That code is damaged.'); } while (x & 128); return v; },
+      vi() { const u = this.vu(); return u % 2 ? -(u + 1) / 2 : u / 2; },
+      raw(n) { need(n); const r = b.subarray(p, p + n); p += n; return r; },
+      done() { return p === b.length; }
+    };
+  }
+  const toBits = (ids) => { const a = new Uint8Array(NSIZE); ids.forEach(id => { const i = IDX.get(id); if (i != null) a[i >> 3] |= 1 << (i & 7); }); return a; };
+
+  // the save, packed to bytes
+  function packState(o, withBoard) {
+    const w = Writer();
+    w.vu(TOTAL);
+    w.raw(toBits(o.disc)); w.raw(toBits(o.seen));
+    w.vu(o.tries); w.vu(o.fails); w.vu(o.hints);
+    w.u8(Math.max(0, SORTS.indexOf(o.sort)));
+    w.u8(withBoard ? 1 : 0);
+    if (withBoard) {
+      w.vi(o.view.x); w.vi(o.view.y); w.vu(Math.round(o.view.z * 1000));
+      w.vu(o.board.length);
+      o.board.forEach(c => { w.vu(IDX.get(c.id)); w.vi(c.x); w.vi(c.y); });
+      w.vu(o.notes.length);
+      o.notes.forEach(n => {
+        w.u8((n.k === 't' ? 1 : 0) | (n.c << 1)); w.vi(n.x); w.vi(n.y);
+        if (n.k === 'b') { w.vu(n.w); w.vu(n.h); }
+        else { const tb = new TextEncoder().encode(n.t); w.vu(tb.length); w.raw(tb); }
+      });
+    }
+    return w.out();
+  }
+  function unpackState(bytes) {
+    const r = Reader(bytes);
+    const N = r.vu();
+    if (N < 1 || N > TOTAL) throw new Error('That code comes from a different version of the game, one with more elements than this one.');
+    const nb = Math.ceil(N / 8);
+    const bitsDisc = r.raw(nb), bitsSeen = r.raw(nb);
+    const ids = bits => { const a = []; for (let i = 0; i < N; i++) if (bits[i >> 3] & (1 << (i & 7))) a.push(W.list[i].id); return a; };
+    const o = { disc: ids(bitsDisc), seen: ids(bitsSeen) };
+    // the order they were found in is not stored; shallower recipes first is the nearest honest guess
+    o.disc.sort((a, b) => (SDEPTH[a] || 0) - (SDEPTH[b] || 0) || IDX.get(a) - IDX.get(b));
+    o.tries = r.vu(); o.fails = r.vu(); o.hints = r.vu();
+    o.sort = SORTS[r.u8()] || 'new';
+    const hasBoard = r.u8() === 1;
+    o.board = []; o.notes = [];
+    if (hasBoard) {
+      o.view = { x: r.vi(), y: r.vi(), z: r.vu() / 1000 };
+      const nc = r.vu(); if (nc > 500) throw new Error('That code is damaged.');
+      for (let i = 0; i < nc; i++) { const k = r.vu(); if (k >= N) throw new Error('That code is damaged.'); o.board.push({ id: W.list[k].id, x: r.vi(), y: r.vi() }); }
+      const nn = r.vu(); if (nn > 500) throw new Error('That code is damaged.');
+      for (let i = 0; i < nn; i++) {
+        const h = r.u8(), x = r.vi(), y = r.vi();
+        if (h & 1) { const len = r.vu(); if (len > 1700) throw new Error('That code is damaged.'); o.notes.push({ k: 't', x, y, c: h >> 1, t: new TextDecoder().decode(r.raw(len)) }); }
+        else o.notes.push({ k: 'b', x, y, c: h >> 1, w: r.vu(), h: r.vu() });
+      }
+    }
+    return { o, hasBoard };
+  }
+
+  async function makeCode(withBoard) {
+    const body = packState(snapshot(), withBoard);
+    let flags = 0, payload = body;
+    if (typeof CompressionStream === 'function') {
+      try { const z = await streamBytes(body, CompressionStream); if (z.length < body.length) { payload = z; flags = 1; } } catch (e) { /* send it uncompressed */ }
+    }
+    const c = crc24(body);
+    const all = new Uint8Array(4 + payload.length);
+    all[0] = flags; all[1] = c >>> 16; all[2] = (c >>> 8) & 255; all[3] = c & 255; all.set(payload, 4);
+    const s = b32enc(all);
+    return 'SA1-' + s.match(/.{1,5}/g).join('-');
+  }
+  async function readCode(text) {
+    let s = String(text || '').toUpperCase().replace(/[^0-9A-Z]/g, '');
+    if (!s) throw new Error('Paste a save code first.');
+    if (s.slice(0, 2) !== 'SA') throw new Error('That does not look like a Stack Alchemist save code. They start with SA1.');
+    if (s[2] !== '1') throw new Error('That code was made by a newer version of the game than this one.');
+    s = s.slice(3).replace(/O/g, '0').replace(/[IL]/g, '1');
+    const all = b32dec(s);
+    if (all.length < 6) throw new Error('That code is too short to be a whole save.');
+    const flags = all[0], want = (all[1] << 16) | (all[2] << 8) | all[3];
+    let body = all.subarray(4);
+    if (flags & 1) {
+      if (typeof DecompressionStream !== 'function') throw new Error('This browser cannot unpack that code. Try a recent Chrome, Firefox, Safari or Edge.');
+      try { body = await streamBytes(body, DecompressionStream); } catch (e) { throw new Error('That code does not add up. Check for a mistyped or missing character.'); }
+    }
+    if (crc24(body) !== want) throw new Error('That code does not add up. Check for a mistyped or missing character.');
+    const { o, hasBoard } = unpackState(body);
+    const f = parseSave(o);
+    if (!f) throw new Error('That code is damaged.');
+    return { f, hasBoard };
+  }
+
+  // swap the running game for another state
+  function applyState(f) {
+    allItems().forEach(removeItem);
+    const saved = f.board; f.board = [];
+    S = f; sync(); gcat = 'all'; hinted = new Set(); failStreak = 0; treeSel = null; treeHist = [];
+    sel.clear();
+    V = f.view || { x: 0, y: 0, z: 1 }; applyView();
+    $('q').value = '';
+    if (saved.length) {
+      saved.forEach(b => { const c = makeChip(b.id); c.x = b.x; c.y = b.y; c.el.style.left = b.x + 'px'; c.el.style.top = b.y + 'px'; });
+      clampAll();
+    } else if (S.disc.length <= STARTERS.length) seedBoard();
+    (f.notes || []).forEach(o => { if (o.k === 'b') makeBox(o.x, o.y, o.w, o.h, o.c); else makeText(o.x, o.y, o.t, o.c); });
+    refreshAll(); if (view === 'tree') renderTree();
+    save();
+  }
+
+  // ---- save code panel (inside the field guide)
+  let saveMode = null, savePending = null, saveSeq = 0;
+  const saveEl = $('g-save');
+  function renderSave() {
+    if (saveMode === 'export') {
+      saveEl.innerHTML = '<div class="sv-head"><b>Export save code</b><button class="btn" type="button" data-sv="close">Done</button></div>' +
+        '<label class="sv-opt"><input type="checkbox" id="svBoard" checked> Include the workbench (tiles, boxes, text and view)</label>' +
+        '<textarea class="sv-code" id="svOut" readonly rows="4" spellcheck="false" aria-label="Your save code" placeholder="Making your code…"></textarea>' +
+        '<div class="sv-row"><button class="btn primary" type="button" data-sv="copy">Copy code</button><span class="sv-msg" id="svMsg" role="status"></span></div>' +
+        '<p class="sv-note">Keep it somewhere safe. Paste it into Import code on any browser or device to carry on from here.</p>';
+      fillExport();
+    } else if (saveMode === 'import') {
+      saveEl.innerHTML = '<div class="sv-head"><b>Import save code</b><button class="btn" type="button" data-sv="close">Cancel</button></div>' +
+        '<textarea class="sv-code" id="svIn" rows="4" spellcheck="false" autocomplete="off" autocapitalize="characters" aria-label="Paste a save code" placeholder="SA1-XXXXX-XXXXX-XXXXX…"></textarea>' +
+        '<div class="sv-row"><button class="btn primary" type="button" data-sv="check">Check code</button><span class="sv-msg" id="svMsg" role="status"></span></div>' +
+        '<div class="sv-row" id="svConfirm" hidden></div>';
+      $('svIn').focus();
+    } else {
+      saveEl.innerHTML = '<div class="sv-row"><b>Save code</b><button class="btn" type="button" data-sv="export">Export code</button><button class="btn" type="button" data-sv="import">Import code</button>' +
+        '<span class="sv-note">Take your progress to another browser or device.</span></div>';
+    }
+  }
+  async function fillExport() {
+    const seq = ++saveSeq, out = $('svOut'), msg = $('svMsg');
+    try {
+      const code = await makeCode($('svBoard').checked);
+      if (seq !== saveSeq || !out.isConnected) return;
+      out.value = code; msg.textContent = code.length + ' characters';
+    } catch (e) { if (out.isConnected) msg.textContent = 'Could not make a code: ' + e.message; }
+  }
+  async function checkCode() {
+    const msg = $('svMsg'), conf = $('svConfirm'), seq = ++saveSeq;
+    conf.hidden = true; savePending = null; msg.className = 'sv-msg';
+    try {
+      const r = await readCode($('svIn').value);
+      if (seq !== saveSeq) return;
+      savePending = r;
+      const f = r.f, nTiles = f.board.length, nBoxes = f.notes.filter(n => n.k === 'b').length, nText = f.notes.length - nBoxes;
+      msg.textContent = 'Valid. ' + rankFor(f.disc.length) + ': ' + f.disc.length + ' of ' + TOTAL + ' discovered, ' + f.tries + ' combos tried' +
+        (r.hasBoard ? ', workbench with ' + nTiles + ' tile' + (nTiles === 1 ? '' : 's') + ', ' + nBoxes + ' box' + (nBoxes === 1 ? '' : 'es') + ' and ' + nText + ' text.' : ', no workbench.');
+      conf.hidden = false;
+      conf.innerHTML = '<span>This replaces your current progress (' + S.disc.length + ' discovered) in this browser.</span><button class="btn danger" type="button" data-sv="apply">Replace my progress</button><button class="btn" type="button" data-sv="close">Keep what I have</button>';
+    } catch (e) { msg.className = 'sv-msg bad'; msg.textContent = e.message; }
+  }
+  saveEl.addEventListener('click', async e => {
+    const b = e.target.closest('[data-sv]');
+    if (!b) { if (e.target.id === 'svOut') e.target.select(); return; }
+    const a = b.dataset.sv;
+    if (a === 'export' || a === 'import') { saveMode = a; savePending = null; renderSave(); }
+    else if (a === 'close') { saveMode = null; savePending = null; saveSeq++; renderSave(); }
+    else if (a === 'check') checkCode();
+    else if (a === 'apply' && savePending) {
+      const f = savePending.f, had = savePending.hasBoard;
+      saveMode = null; savePending = null; saveSeq++;
+      applyState(f); closeGuide();
+      setStatus('Save loaded. ' + S.disc.length + ' of ' + TOTAL + ' discovered' + (had ? '.' : ', with a clean workbench.'));
+    }
+    else if (a === 'copy') {
+      const out = $('svOut'), msg = $('svMsg');
+      if (!out.value) return;
+      let ok = false;
+      try { await navigator.clipboard.writeText(out.value); ok = true; } catch (err) { /* fall through */ }
+      if (!ok) { out.focus(); out.select(); try { ok = document.execCommand('copy'); } catch (err) { /* ignore */ } }
+      msg.textContent = ok ? 'Copied.' : 'Press Ctrl+C (or Cmd+C) to copy the selected code.';
+    }
+  });
+  saveEl.addEventListener('change', e => { if (e.target.id === 'svBoard') fillExport(); });
+  saveEl.addEventListener('paste', e => { if (e.target.id === 'svIn') setTimeout(checkCode, 0); });
+  saveEl.addEventListener('input', e => { if (e.target.id === 'svIn') { savePending = null; saveSeq++; const c = $('svConfirm'); if (c) c.hidden = true; const m = $('svMsg'); if (m) { m.textContent = ''; m.className = 'sv-msg'; } } });
 
   /* ---------- icons on the controls ---------- */
   function decorate() {
