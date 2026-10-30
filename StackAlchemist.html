@@ -330,13 +330,79 @@ button { font: inherit; color: inherit; }
 .sv-msg.bad { color: var(--c-sec); }
 .sv-note { margin: 0; font-size: 12.5px; }
 
+/* ---- coins, clues, casino ---- */
+.coinpill { font-variant-numeric: tabular-nums; }
+.coinpill .cn { font: 700 12.5px var(--f-mono); }
+.coinpill.bump { animation: bump .5s ease-out; }
+.btn .tk { min-width: 18px; padding: 1px 5px; border-radius: 99px; background: var(--accent-ink); color: var(--accent); font: 800 11px/1.3 var(--f-mono); text-align: center; }
+.gain { display: flex; align-items: center; gap: 6px; font: 700 12px var(--f-mono); color: var(--ink); }
+.gain span { font-weight: 500; color: var(--ink2); }
+.hintcard { position: absolute; left: 12px; top: 12px; z-index: 60; width: min(310px, calc(100% - 24px)); background: var(--raise); border: 1px solid var(--accent); border-radius: 12px; padding: 10px 12px; display: grid; gap: 8px; font-size: 13px; }
+.hc-head { display: flex; justify-content: space-between; align-items: center; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.hc-x { border: 0; background: transparent; color: var(--ink2); font-size: 18px; line-height: 1; cursor: pointer; padding: 0 2px; }
+.hintcard ol { margin: 0; padding-left: 18px; display: grid; gap: 5px; color: var(--ink); }
+.hc-row { display: flex; gap: 6px; flex-wrap: wrap; }
+.hc-row .btn { padding: 5px 9px; font-size: 12px; }
+.btn:disabled { opacity: .5; cursor: not-allowed; }
+
+.casino { min-height: 0; overflow: auto; border: 1px solid var(--line); border-radius: 14px; background: var(--panel); padding: 16px; display: grid; gap: 16px; align-content: start; grid-auto-rows: max-content; }
+.cz-head { display: flex; flex-wrap: wrap; gap: 10px 16px; justify-content: space-between; align-items: flex-start; }
+.cz-head h3 { margin: 0; font: 800 22px/1.1 var(--f-display); letter-spacing: -0.01em; text-wrap: balance; }
+.cz-head p { margin: 4px 0 0; font-size: 13.5px; color: var(--ink2); }
+.cz-stats { display: flex; flex-wrap: wrap; gap: 6px; }
+.stat { display: inline-flex; align-items: center; gap: 6px; padding: 5px 9px; border: 1px solid var(--line); border-radius: 8px; background: var(--raise); font: 700 12px var(--f-mono); font-variant-numeric: tabular-nums; }
+.stat .sl { display: none; font-style: normal; font-weight: 500; color: var(--ink2); }
+@media (min-width: 1100px) { .stat .sl { display: inline; } }
+.cz-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
+@media (max-width: 900px) { .cz-grid { grid-template-columns: minmax(0, 1fr); } }
+.slot { display: grid; gap: 12px; padding: 14px; border-radius: 16px; border: 2px solid var(--line); background: color-mix(in srgb, var(--c-ai) 9%, var(--raise)); }
+.reels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
+.reel { height: clamp(86px, 16vw, 128px); display: grid; place-items: center; border-radius: 12px; border: 2px solid var(--ink2); background: var(--panel); overflow: hidden; }
+.reel .pxi { width: 54%; height: 54%; max-width: 72px; max-height: 72px; }
+.reel.spin .pxi { animation: reelshake .14s linear infinite; }
+.reel.stop { animation: drop .3s cubic-bezier(.2, 1.3, .4, 1); }
+.reel.win { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+@keyframes reelshake { 0% { transform: translateY(-9px); } 50% { transform: translateY(9px); } 100% { transform: translateY(-9px); } }
+@keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.14); } 100% { transform: scale(1); } }
+.spinbtn { justify-content: center; padding: 11px 14px; font-size: 15px; }
+.spinbtn .pxi { width: 18px; height: 18px; }
+.slot-msg { margin: 0; min-height: 2.8em; font: 600 13px/1.4 var(--f-mono); color: var(--ink); }
+.cz-note { margin: 0; font: 500 12px/1.45 var(--f-mono); color: var(--ink2); }
+.pay summary { cursor: pointer; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+.pay ul { list-style: none; margin: 8px 0 0; padding: 0; display: grid; gap: 6px; }
+.pay li { display: grid; grid-template-columns: 16px auto minmax(0, 1fr); gap: 8px; align-items: baseline; font-size: 12.5px; color: var(--ink2); }
+.pay li b { color: var(--ink); white-space: nowrap; }
+.cz-side { display: grid; gap: 10px; align-content: start; }
+.cz-side h4 { margin: 6px 0 0; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
+.shop { display: grid; gap: 8px; }
+.offer { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 10px; align-items: center; padding: 9px 10px; border: 1px solid var(--line); border-radius: 10px; background: var(--raise); }
+.offer b { display: block; font-size: 13.5px; }
+.offer span { font-size: 12.5px; color: var(--ink2); }
+.offer .oi { display: grid; place-items: center; width: 30px; height: 30px; border-radius: 8px; border: 1px solid var(--line); background: var(--panel); }
+.offer .oi .pxi { width: 20px; height: 20px; }
+.offer .btn .pxi { width: 14px; height: 14px; }
+.coll { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 8px; }
+.rtile { display: flex; align-items: center; gap: 8px; padding: 5px 8px 5px 5px; border: 1px solid var(--rc); border-radius: 10px; background: var(--raise); font: 600 13px/1.15 var(--f-body); position: relative; min-width: 0; }
+.rtile .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.rtag { flex: none; font: 700 10px var(--f-mono); padding: 2px 6px; border-radius: 99px; border: 1px solid var(--rc); }
+
+/* special editions: a coloured frame and a slow sheen, no shadows */
+[data-rare="1"] { --rc: #a8b0c2; } [data-rare="2"] { --rc: #e0a800; } [data-rare="3"] { --rc: #a66cff; } [data-rare="4"] { --rc: #ff4d8d; }
+.chip[data-rare] { border-color: var(--rc); }
+.chip[data-rare]::before { content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; background: linear-gradient(115deg, transparent 30%, color-mix(in srgb, var(--rc) 42%, transparent) 50%, transparent 70%); background-size: 250% 100%; animation: sheen 3.4s linear infinite; }
+.chip[data-rare="4"]::before { background: linear-gradient(115deg, #ff4d8d55, #ffd23f55, #3ddc8455, #4ea8ff55, #a66cff55, #ff4d8d55); background-size: 300% 100%; animation-duration: 2.4s; }
+@keyframes sheen { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.t-rare { font: 700 11.5px var(--f-mono); color: var(--ink); border-top: 1px solid var(--line); padding-top: 6px; }
+.t-rare::before { content: ""; display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--rc); margin-right: 6px; }
+
 @keyframes pop { from { transform: scale(.5); opacity: 0; } to { transform: scale(1); opacity: 1; } }
 @keyframes shake { 0%, 100% { transform: translateX(0); } 20% { transform: translateX(-7px); } 40% { transform: translateX(6px); } 60% { transform: translateX(-4px); } 80% { transform: translateX(3px); } }
 @keyframes drop { from { transform: translateY(-14px) scale(.96); opacity: 0; } to { transform: none; opacity: 1; } }
 @keyframes flash { from { color: var(--accent); } to { color: var(--ink2); } }
 @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 transparent; } 50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 35%, transparent); } }
 @media (prefers-reduced-motion: reduce) {
-  .on-board.pop, .on-board.shake, .card, .items .chip.hinted, .status.flash { animation: none; }
+  .on-board.pop, .on-board.shake, .card, .items .chip.hinted, .status.flash, .chip[data-rare]::before, .coinpill.bump, .reel.stop { animation: none; }
+  .reel.spin .pxi { animation: none; }
   .bar > i { transition: none; }
 }
 </style>
@@ -348,7 +414,8 @@ button { font: inherit; color: inherit; }
       <p>Mix languages, humans, and bad decisions.</p>
     </div>
     <div class="actions">
-      <button class="btn primary" id="hint" type="button"></button>
+      <button class="btn coinpill" id="coinPill" type="button" title="Coins. Open the casino."></button>
+      <button class="btn primary" id="hint" type="button" title="Spend a hint token for a clue"></button>
       <button class="btn ico" id="guideBtn" type="button" aria-label="Field guide"></button>
       <button class="btn ico" id="clear" type="button" aria-label="Clear board"></button>
     </div>
@@ -358,6 +425,7 @@ button { font: inherit; color: inherit; }
     <div class="tabs" role="tablist" aria-label="View">
       <button class="tab" role="tab" id="tabBench" type="button" aria-selected="true"></button>
       <button class="tab" role="tab" id="tabTree" type="button" aria-selected="false"></button>
+      <button class="tab" role="tab" id="tabCasino" type="button" aria-selected="false"></button>
     </div>
     <div class="tools" id="tools" role="toolbar" aria-label="Workbench tools">
       <button class="tab tool" id="toolSelect" data-tool="select" type="button" aria-pressed="true" title="Selection (V): drag to select, drag things to move them"></button>
@@ -376,6 +444,7 @@ button { font: inherit; color: inherit; }
       <div class="empty" id="empty"></div>
       <div class="found" id="found"></div>
       <div class="status" id="status" role="status" aria-live="polite"></div>
+      <div class="hintcard" id="hintcard" hidden></div>
       <div class="marquee" id="marquee" hidden></div>
       <div class="palette" id="palette" role="group" aria-label="Colour" hidden><div class="swatches" id="swatches"></div></div>
       <div class="zoombar" id="zoombar" role="group" aria-label="Workbench view" title="Scroll to zoom. Right-drag to pan. Drag on empty space to select.">
@@ -396,6 +465,32 @@ button { font: inherit; color: inherit; }
         <button class="btn" type="button" id="treeBack">Back</button>
       </div>
       <div class="tree-body" id="treeBody"></div>
+    </section>
+
+    <section class="casino" id="casinopane" aria-label="Casino" hidden>
+      <div class="cz-head">
+        <div>
+          <h3>The Merge Conflict Casino</h3>
+          <p>Discoveries pay coins. Coins buy spins. The house edge is a nested ternary.</p>
+        </div>
+        <div class="cz-stats" id="czStats"></div>
+      </div>
+      <div class="cz-grid">
+        <div class="slot">
+          <div class="reels" id="reels" role="img" aria-label="Slot machine reels"></div>
+          <button class="btn primary spinbtn" id="spin" type="button"></button>
+          <p class="slot-msg" id="slotMsg" role="status" aria-live="polite">Pull the lever. Three of a kind wins something.</p>
+          <p class="cz-note" id="czTally"></p>
+          <details class="pay"><summary>Paytable</summary><ul id="payList"></ul></details>
+        </div>
+        <div class="cz-side">
+          <h4>Shop</h4>
+          <div class="shop" id="czShop"></div>
+          <h4>Special editions</h4>
+          <p class="cz-note">A special edition glows in your drawer and on the workbench. Using it in a combination pays +25% coins per rarity level on whatever you discover.</p>
+          <div class="coll" id="czColl"></div>
+        </div>
+      </div>
     </section>
 
     <aside class="tray" id="tray" aria-label="Discovered elements">
@@ -1600,6 +1695,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
 
   const KEY = 'stack-alchemist-v1';
   const MAX_CHIPS = 40;
+  const START_COINS = 60, START_TOKENS = 3, SPIN_COST = 30, RANK_BONUS = 50;
   const $ = id => document.getElementById(id);
   const board = $('board'), items = $('items'), tray = $('tray'), statusEl = $('status'),
         foundEl = $('found'), emptyEl = $('empty'), guideEl = $('guide'),
@@ -1651,7 +1747,8 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
   let gcat = 'all', rankUp = null;
   let V = { x: 0, y: 0, z: 1 };            // the view: pan offset (screen px) and zoom
 
-  const fresh = () => ({ disc: STARTERS.slice(), seen: STARTERS.slice(), board: [], tries: 0, fails: 0, hints: 0, sort: 'new', cat: 'all', tier: 'all', q: '', notes: [] });
+  const fresh = () => ({ disc: STARTERS.slice(), seen: STARTERS.slice(), board: [], tries: 0, fails: 0, hints: 0, sort: 'new', cat: 'all', tier: 'all', q: '', notes: [],
+    coins: START_COINS, spent: 0, tokens: START_TOKENS, reveals: 0, free: 0, boost: 0, spins: 0, pity: 0, won: 0, rare: {}, clue: null });
   function sync() { discSet = new Set(S.disc); seenSet = new Set(S.seen); }
 
   function load() {
@@ -1673,6 +1770,24 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
         (n.k === 't' ? typeof n.t === 'string' && n.t.length > 0 : isFinite(n.w) && isFinite(n.h) && n.w >= 1 && n.h >= 1)).slice(0, 80)
         .map(n => n.k === 't' ? Object.assign({}, n, { t: n.t.slice(0, 400) }) : n);
       if (o.view && isFinite(o.view.x) && isFinite(o.view.y) && isFinite(o.view.z)) f.view = { x: +o.view.x, y: +o.view.y, z: Math.max(0.25, Math.min(3, +o.view.z)) };
+
+      // economy. Saves from before coins existed have none, so they are paid out from what they have discovered.
+      const nn = (v, d, max) => (v === undefined || v === null || !Number.isFinite(+v)) ? d : Math.max(0, Math.min(max || 1e9, Math.floor(+v)));
+      f.spent = nn(o.spent, 0); f.tokens = nn(o.tokens, START_TOKENS, 99999); f.reveals = nn(o.reveals, 0, 99999); f.free = nn(o.free, 0, 99999);
+      f.boost = nn(o.boost, 0, 99999); f.spins = nn(o.spins, 0); f.pity = nn(o.pity, 0, 99); f.won = nn(o.won, 0);
+      f.rare = {};
+      if (o.rare && typeof o.rare === 'object') Object.keys(o.rare).forEach(id => { const l = o.rare[id] | 0; if (EL.has(id) && l >= 1 && l <= 4 && f.disc.includes(id)) f.rare[id] = l; });
+      const hadCoins = !(o.coins === undefined || o.coins === null || !Number.isFinite(+o.coins));
+      f.coins = nn(o.coins, 0);
+      f.prorated = false;
+      if (f.spent === 0) {                               // nothing has ever been spent, so the balance should be everything earned so far
+        const startSet = new Set(STARTERS);
+        const owed = START_COINS + f.disc.reduce((s, id) => s + (startSet.has(id) ? 0 : coinsFor(id)), 0);
+        if (!hadCoins || f.coins < owed) { f.coins = Math.max(f.coins, owed); f.prorated = true; }
+      }
+      const cl = o.clue;
+      if (cl && EL.has(cl.id) && !f.disc.includes(cl.id) && EL.get(cl.id).rec[cl.i | 0] && (cl.lvl | 0) >= 0 && (cl.lvl | 0) <= 4)
+        f.clue = { id: cl.id, lvl: cl.lvl | 0, i: cl.i | 0, p: cl.p ? 1 : 0, rev: !!cl.rev };
       return f;
     } catch (e) { return null; }
   }
@@ -1680,6 +1795,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     {
       return {
         disc: S.disc, seen: [...seenSet], tries: S.tries, fails: S.fails, hints: S.hints, sort: S.sort,
+        coins: S.coins, spent: S.spent, tokens: S.tokens, reveals: S.reveals, free: S.free, boost: S.boost, spins: S.spins, pity: S.pity, won: S.won, rare: S.rare, clue: S.clue,
         view: { x: Math.round(V.x), y: Math.round(V.y), z: Math.round(V.z * 1000) / 1000 },
         board: [...chips.values()].map(c => ({ id: c.id, x: Math.round(c.x), y: Math.round(c.y) })),
         notes: [...notes.values()].map(n => n.kind === 'box'
@@ -1742,13 +1858,13 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     const ids = visibleIds();
     items.innerHTML = ids.length ? ids.map(id => {
       const e = EL.get(id);
-      return '<button class="chip' + (seenSet.has(id) ? '' : ' fresh') + (hinted.has(id) ? ' hinted' : '') + '" type="button" data-id="' + id +
+      return '<button class="chip' + (seenSet.has(id) ? '' : ' fresh') + (hinted.has(id) ? ' hinted' : '') + '" type="button"' + (rareOf(id) ? ' data-rare="' + rareOf(id) + '"' : '') + ' data-id="' + id +
         '" style="--c:var(--c-' + e.cat + ')">' + badgeHTML(e) + '<span class="nm">' + esc(e.name) + '</span></button>';
     }).join('') : '<p class="none">Nothing matches that yet. It might not be discovered.</p>';
     $('sort').textContent = { new: 'Newest', az: 'A to Z', type: 'By type', tier: 'By tier' }[S.sort];
   }
 
-  function refreshAll() { renderMeter(); renderFilters(); renderTray(); updateEmpty(); }
+  function refreshAll() { renderMeter(); renderFilters(); renderTray(); updateEmpty(); renderEco(); renderClue(); }
 
   function setStatus(msg) {
     statusEl.textContent = msg;
@@ -1776,6 +1892,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     el.style.setProperty('--c', 'var(--c-' + e.cat + ')');
     el.innerHTML = badgeHTML(e) + '<span class="nm">' + esc(e.name) + '</span>';
     el.setAttribute('aria-label', e.name);
+    if (rareOf(id)) el.dataset.rare = rareOf(id);
     world.appendChild(el);
     const c = { u, id, kind: 'chip', x: 0, y: 0, el };
     chips.set(u, c);
@@ -1900,13 +2017,13 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     const cx = (a.x + a.el.offsetWidth / 2 + b.x + b.el.offsetWidth / 2) / 2;
     const cy = (a.y + a.el.offsetHeight / 2 + b.y + b.el.offsetHeight / 2) / 2;
     removeChip(a); removeChip(b);
-    const news = [];
+    const news = [], gains = [];
     res.forEach((rid, i) => {
       const c = makeChip(rid, 'pop');
       place(c, cx + (i - (res.length - 1) / 2) * (c.el.offsetWidth + 12), cy);
-      if (!discSet.has(rid)) { discover(rid); news.push(rid); }
+      if (!discSet.has(rid)) { gains.push(discover(rid, a.id, b.id)); news.push(rid); }
     });
-    if (news.length) showFound(news, A, B);
+    if (news.length) showFound(news, A, B, gains);
     else setStatus(A.name + ' + ' + B.name + ' = ' + res.map(r => EL.get(r).name).join(' + ') + ' (already in your drawer)');
     refreshAll(); save();
   }
@@ -1925,14 +2042,34 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     refreshAll(); save();
   }
 
-  function discover(id) {
+  function coinsFor(id) { return 5 + 3 * Math.min(SDEPTH[id] || 0, 14); }
+  function rareOf(id) { return (S && S.rare && S.rare[id]) || 0; }
+  function fmt(n) { return Number(n).toLocaleString('en-US'); }
+
+  // a new discovery pays coins: more for deeper recipes, +25% per rarity level of the ingredients, doubled by a boost
+  function discover(id, aid, bid) {
     const before = rankFor(S.disc.length);
     S.disc.push(id); discSet.add(id);
     const after = rankFor(S.disc.length);
     if (after !== before) rankUp = after;
+    const g = { lv: rareOf(aid) + rareOf(bid), boost: false, rank: after !== before ? RANK_BONUS : 0, clue: 0, solved: false };
+    let amt = coinsFor(id);
+    if (g.lv) amt = Math.round(amt * (1 + 0.25 * g.lv));
+    if (S.boost > 0) { S.boost--; amt *= 2; g.boost = true; }
+    if (S.clue && S.clue.id === id) { g.solved = true; g.clue = S.clue.rev ? 0 : 20; S.clue = null; }
+    g.amt = amt + g.rank + g.clue;
+    S.coins += g.amt;
+    return g;
   }
 
-  function showFound(news, A, B) {
+  function showFound(news, A, B, gains) {
+    gains = gains || [];
+    const tot = gains.reduce((s, g) => s + g.amt, 0);
+    const bits = [];
+    if (gains.some(g => g.lv)) bits.push('special edition bonus');
+    if (gains.some(g => g.boost)) bits.push('2x boost');
+    if (gains.some(g => g.solved)) bits.push(gains.some(g => g.clue) ? 'clue solved +20' : 'recipe revealed');
+    if (gains.some(g => g.rank)) bits.push('rank up +' + RANK_BONUS);
     const card = document.createElement('div');
     card.className = 'card';
     card.innerHTML = news.map(id => {
@@ -1941,6 +2078,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
         esc(CAT_NAME[e.cat]) + '</div><div class="fname">' + esc(e.name) + '</div><div class="fflav">' + esc(e.flavor) + '</div></div></div>';
     }).join('') +
       '<div class="frecipe">' + esc(A.name) + ' + ' + esc(B.name) + '</div>' +
+      (tot ? '<div class="gain">' + pxi('coin') + '+' + fmt(tot) + ' coins' + (bits.length ? ' <span>' + esc(bits.join(' / ')) + '</span>' : '') + '</div>' : '') +
       (rankUp ? '<div class="rankup">Rank up: ' + esc(rankUp) + '</div>' : '') +
       (S.disc.length >= TOTAL ? '<div class="rankup">Every element discovered. Go touch grass.</div>' : '');
     rankUp = null;
@@ -2230,7 +2368,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
   board.addEventListener('mousedown', e => { if (e.button === 1) e.preventDefault(); });   // no middle-click autoscroll
 
   board.addEventListener('pointerdown', e => {
-    if (e.target.closest('.zoombar, .card, .palette')) return;
+    if (e.target.closest('.zoombar, .card, .palette, .hintcard')) return;
     if (e.target.closest('.note-text.editing')) return;     // let the caret land inside the text being edited
     if (typing(document.activeElement)) document.activeElement.blur();   // pressing the board leaves the search box, so keys act on the board
     if (e.pointerType === 'touch') {
@@ -2256,7 +2394,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
   items.addEventListener('pointerdown', e => {
     const b = e.target.closest('.chip');
     if (!b || e.button > 0) return;
-    drag = { kind: 'tray', id: b.dataset.id, btn: b, pid: e.pointerId, sx: e.clientX, sy: e.clientY, moved: false, ghost: null, treeMode: view === 'tree' };
+    drag = { kind: 'tray', id: b.dataset.id, btn: b, pid: e.pointerId, sx: e.clientX, sy: e.clientY, moved: false, ghost: null, treeMode: view !== 'bench' };
     try { b.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
   });
 
@@ -2469,7 +2607,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
   /* ---------- zoom, pan and keyboard on the workbench ---------- */
   // scroll wheel zooms around the pointer (a trackpad pinch does too); pan with right-drag
   board.addEventListener('wheel', e => {
-    if (e.target.closest('.card')) return;
+    if (e.target.closest('.card, .hintcard')) return;
     e.preventDefault();
     const unit = e.deltaMode === 1 ? 16 : e.deltaMode === 2 ? board.clientHeight : 1;
     const dy = e.deltaY * unit;
@@ -2526,7 +2664,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     const b = e.target.closest('.chip');
     if (!b) return;
     b.classList.remove('fresh');
-    if (view === 'tree') selectTree(b.dataset.id); else spawn(b.dataset.id);
+    if (view === 'tree') selectTree(b.dataset.id); else if (view === 'bench') spawn(b.dataset.id);
   });
   [board, items].forEach(el => el.addEventListener('contextmenu', e => e.preventDefault()));
 
@@ -2576,32 +2714,259 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     updateEmpty(); save();
   });
 
-  /* ---------- hint ---------- */
-  $('hint').addEventListener('click', () => {
-    if (view !== 'bench') setView('bench');
+  /* ---------- economy: coins, hint tokens, clues, the casino ---------- */
+  const CLUE_MAX = 4;
+  const RARITY = [null, { n: 'Beta', w: 60 }, { n: 'LTS', w: 28 }, { n: 'Nightly', w: 10 }, { n: 'Zero-Day', w: 2 }];
+  const casinoPane = $('casinopane'), hintCard = $('hintcard');
+  let ecoHold = null, clueHidden = false, lastCoins = null, spinning = false;
+  const eco = () => ecoHold || S;
+  const CLUE_QUIPS = ['The rubber duck clears its throat.', 'A senior dev sighs and opens a ticket.', 'Stack Overflow, but nicer.', 'You found a comment that is still accurate.', 'The docs were read. Briefly.'];
+
+  function setRare(el, id) { const l = rareOf(id); if (l) el.dataset.rare = l; else delete el.dataset.rare; }
+  function applyRarity() {
+    chips.forEach(c => setRare(c.el, c.id));
+    items.querySelectorAll('.chip[data-id]').forEach(el => setRare(el, el.dataset.id));
+  }
+
+  function renderEco() {
+    const e = eco(), pill = $('coinPill');
+    if (!pill) return;
+    pill.innerHTML = pxi('coin') + '<span class="cn">' + fmt(e.coins) + '</span>';
+    pill.setAttribute('aria-label', fmt(e.coins) + ' coins. Open the casino.');
+    const tk = $('hintCt'); if (tk) tk.textContent = e.tokens;
+    $('hint').setAttribute('aria-label', 'Hint, ' + e.tokens + ' hint token' + (e.tokens === 1 ? '' : 's'));
+    if (lastCoins !== null && e.coins > lastCoins) { pill.classList.remove('bump'); void pill.offsetWidth; pill.classList.add('bump'); }
+    lastCoins = e.coins;
+    if (view === 'casino') renderCasino();
+  }
+  $('coinPill').addEventListener('click', () => setView('casino'));
+
+  /* ---- clues: a real hint that never hands over the answer ---- */
+  function pickTarget() {
     const cands = [];
-    RECIPES.forEach((res, key) => {
-      const [a, b] = key.split('+');
-      if (discSet.has(a) && discSet.has(b) && res.some(r => !discSet.has(r))) cands.push([a, b]);
+    W.list.forEach(e => {
+      if (discSet.has(e.id)) return;
+      const i = e.rec.findIndex(r => discSet.has(r[0]) && discSet.has(r[1]));
+      if (i >= 0) cands.push({ id: e.id, i });
     });
-    if (!cands.length) { setStatus('Nothing left to hint. You have found everything.'); return; }
-    const [a, b] = pick(cands);
-    S.hints++;
+    return cands.length ? pick(cands) : null;
+  }
+  function clueLines(c) {
+    const e = EL.get(c.id), [ai, bi] = e.rec[c.i], A = EL.get(ai), B = EL.get(bi), lines = [];
+    const same = ai === bi, keep = c.p ? B : A, other = c.p ? A : B;
+    const alnum = s => (s.match(/[A-Za-z0-9]/g) || []).length;
+    if (c.lvl >= 1) lines.push('It belongs to ' + CAT_NAME[e.cat] + ', and it is made from ' + (A.cat === B.cat ? 'two things from ' + CAT_NAME[A.cat] : CAT_NAME[A.cat] + ' and ' + CAT_NAME[B.cat]) + '.');
+    if (c.lvl >= 2) lines.push('Its name looks like “' + e.name.replace(/[A-Za-z0-9]+/g, w => w[0] + '_'.repeat(w.length - 1)) + '”, ' + alnum(e.name) + ' letters and numbers in all.');
+    if (c.lvl >= 3) lines.push(same ? 'Both ingredients are the same element, and its name starts with “' + keep.name[0] + '”.' : 'One of the ingredients is ' + keep.name + '.');
+    if (c.lvl >= 4) lines.push(same ? 'That element’s name is ' + alnum(keep.name) + ' letters and numbers long.' : 'The other one starts with “' + other.name[0] + '” and is ' + alnum(other.name) + ' letters and numbers long.');
+    if (c.rev) lines.push('Recipe: ' + A.name + ' + ' + B.name + '.');
+    return lines;
+  }
+  function renderClue() {
+    const c = S.clue;
+    if (!c || clueHidden) { hintCard.hidden = true; return; }
+    const lines = clueLines(c);
+    hintCard.innerHTML = '<div class="hc-head"><span>' + (c.rev ? 'Recipe revealed' : 'Clue ' + c.lvl + ' of ' + CLUE_MAX) + '</span><button class="hc-x" type="button" data-hc="hide" aria-label="Hide this clue">&times;</button></div>' +
+      (lines.length ? '<ol>' + lines.map(l => '<li>' + esc(l) + '</li>').join('') + '</ol>' : '') +
+      '<div class="hc-row"><button class="btn" type="button" data-hc="next"' + (c.rev || c.lvl >= CLUE_MAX || S.tokens < 1 ? ' disabled' : '') + '>Next clue &middot; 1 token</button>' +
+      (S.reveals > 0 && !c.rev ? '<button class="btn" type="button" data-hc="reveal">Reveal recipe &middot; ' + S.reveals + '</button>' : '') + '</div>';
+    hintCard.hidden = false;
+  }
+  function noTokens() { setStatus('Out of hint tokens. Win some on the slots, or buy one in the Casino for 45 coins.'); }
+  function startClue() {
+    if (S.tokens < 1) { noTokens(); return; }
+    const t = pickTarget();
+    if (!t) { setStatus('Nothing left to hint. You have found everything you can reach.'); return; }
+    S.tokens--; S.hints++;
+    S.clue = { id: t.id, lvl: 1, i: t.i, p: Math.random() < 0.5 ? 1 : 0, rev: false };
+    clueHidden = false; renderEco(); renderClue(); save();
+    setStatus(pick(CLUE_QUIPS) + ' Clue 1 is on the workbench.');
+  }
+  function nextClue() {
+    const c = S.clue;
+    if (!c) return;
+    if (c.rev || c.lvl >= CLUE_MAX) { setStatus('That is every clue for this one. Experiment, or spend a recipe reveal.'); return; }
+    if (S.tokens < 1) { noTokens(); return; }
+    S.tokens--; S.hints++; c.lvl++;
+    clueHidden = false; renderEco(); renderClue(); save();
+    setStatus('Clue ' + c.lvl + ' of ' + CLUE_MAX + '. The rubber duck is running out of patience.');
+  }
+  function useReveal() {
+    if (S.reveals < 1) return;
+    let c = S.clue;
+    if (!c) {
+      const t = pickTarget();
+      if (!t) { setStatus('Nothing left to reveal. You have found everything you can reach.'); return; }
+      c = S.clue = { id: t.id, lvl: 0, i: t.i, p: Math.random() < 0.5 ? 1 : 0, rev: false };
+    }
+    if (c.rev) return;
+    S.reveals--; S.hints++; c.rev = true; clueHidden = false;
+    const [a, b] = EL.get(c.id).rec[c.i];
+    if (view !== 'bench') setView('bench');
     hinted = new Set([a, b]);
     S.cat = 'all'; S.tier = 'all'; S.q = ''; $('q').value = '';
-    renderFilters(); renderTray();
+    renderEco(); renderClue(); renderFilters(); renderTray();
     const first = items.querySelector('.hinted');
     if (first) first.scrollIntoView({ block: 'nearest', inline: 'nearest' });
-    setStatus('Hint: try ' + EL.get(a).name + (a === b ? ' with another one of itself.' : ' with ' + EL.get(b).name + '.'));
+    setStatus('Recipe reveal: combine ' + EL.get(a).name + (a === b ? ' with another one of itself.' : ' with ' + EL.get(b).name + '.') + ' What it makes is still a surprise.');
     setTimeout(() => { hinted = new Set(); items.querySelectorAll('.hinted').forEach(n => n.classList.remove('hinted')); }, 6500);
     save();
+  }
+  $('hint').addEventListener('click', () => {
+    if (view !== 'bench') setView('bench');
+    if (S.clue && clueHidden) { clueHidden = false; renderClue(); return; }
+    if (S.clue) nextClue(); else startClue();
+  });
+  hintCard.addEventListener('click', e => {
+    const b = e.target.closest('[data-hc]');
+    if (!b) return;
+    const a = b.dataset.hc;
+    if (a === 'hide') { clueHidden = true; renderClue(); }
+    else if (a === 'next') nextClue();
+    else if (a === 'reveal') useReveal();
+  });
+  ['pointerdown', 'wheel'].forEach(t => hintCard.addEventListener(t, e => e.stopPropagation()));
+
+  /* ---- the casino ---- */
+  const SYMS = { bug: ['bug', 'Bug'], cup: ['cup', 'Coffee'], bulb: ['bulb', 'Lightbulb'], key: ['key', 'Key'], coin: ['coin', 'Coin'], star: ['star', 'Star'], bomb: ['bomb', 'Zero-Day'] };
+  const SYM_KEYS = Object.keys(SYMS);
+  const OUTS = [
+    { k: 'jackpot', w: 5, s: 'bomb' }, { k: 'rare', w: 30, s: 'star' }, { k: 'reveal', w: 55, s: 'key' }, { k: 'hints', w: 85, s: 'bulb' },
+    { k: 'coins', w: 90, s: 'coin' }, { k: 'free', w: 70, s: 'cup' }, { k: 'boost', w: 40, s: 'bug' }, { k: 'pair', w: 140 }, { k: 'loss', w: 485 }
+  ];
+  const PAYS = [
+    ['bomb', '3 Zero-Days', 'Jackpot: a Zero-Day edition, 250 coins and 3 hint tokens'],
+    ['star', '3 Stars', 'A special edition of something you own (Beta, LTS, Nightly, rarely Zero-Day)'],
+    ['key', '3 Keys', 'A recipe reveal'],
+    ['bulb', '3 Lightbulbs', '2 hint tokens'],
+    ['coin', '3 Coins', '75 coins'],
+    ['cup', '3 Coffees', 'A free spin'],
+    ['bug', '3 Bugs', 'It’s a feature: your next discovery pays double'],
+    [null, 'Any pair', 'Your 15 coins back, give or take. Eight dry spins in a row guarantees one.']
+  ];
+  const LOSS_QUIPS = ['Segfault. Nothing here.', 'Null reference. The jackpot was not initialised.', 'Works on my machine. Not on this reel.', 'Three different symbols, zero regrets.', 'The RNG was code reviewed and approved.', 'Skill issue, in the way that dice have skill.', 'Rolled back to the previous balance.', 'Try again. The vibes are green.'];
+  const roll = () => {
+    if (S.pity >= 8) return OUTS.find(o => o.k === 'pair');
+    let r = Math.random() * 1000;
+    for (const o of OUTS) { r -= o.w; if (r < 0) return o; }
+    return OUTS[OUTS.length - 1];
+  };
+  const reelsFor = o => {
+    if (o.s) return [o.s, o.s, o.s];
+    const bag = SYM_KEYS.filter(k => k !== 'bomb').sort(() => Math.random() - 0.5);
+    if (o.k === 'pair') { const r = [bag[0], bag[0], bag[1]]; return r.sort(() => Math.random() - 0.5); }
+    return SYM_KEYS.slice().sort(() => Math.random() - 0.5).slice(0, 3);
+  };
+  const rollRarity = () => { let r = Math.random() * 100; for (let l = 1; l <= 4; l++) { r -= RARITY[l].w; if (r < 0) return l; } return 1; };
+  function giveRare(level) {
+    let pool = S.disc.filter(id => rareOf(id) === 0);
+    if (!pool.length) pool = S.disc.filter(id => rareOf(id) < level);
+    if (!pool.length) { S.coins += 100; S.won += 100; return 'Everything you own is already that shiny, so the house paid 100 coins instead.'; }
+    const id = pick(pool);
+    S.rare[id] = level;
+    applyRarity();
+    return EL.get(id).name + ' is now a ' + RARITY[level].n + ' edition. Discoveries made with it pay ' + (level * 25) + '% more.';
+  }
+  function award(o) {
+    const gain = n => { S.coins += n; S.won += n; };
+    switch (o.k) {
+      case 'jackpot': gain(250); S.tokens += 3; return 'JACKPOT. ' + giveRare(4) + ' Plus 250 coins and 3 hint tokens.';
+      case 'rare': return giveRare(rollRarity());
+      case 'reveal': S.reveals++; return 'A recipe reveal. Use it from the clue card or the shop panel.';
+      case 'hints': S.tokens += 2; return 'Two hint tokens. Knowledge is power, and also 90 coins.';
+      case 'coins': gain(75); return '75 coins. The house is visibly upset.';
+      case 'free': S.free++; return 'Free spin. Caffeine-based luck.';
+      case 'boost': S.boost++; return 'Triple bug. It’s a feature: your next discovery pays double.';
+      case 'pair': gain(15); return 'A pair. 15 coins back, so it was basically a refund.';
+      default: return pick(LOSS_QUIPS);
+    }
+  }
+  const reduceMotion = () => !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches);
+  function setReel(i, key) {
+    const r = $('reels').children[i];
+    r.innerHTML = pxi(SYMS[key][0]);
+    r.setAttribute('aria-label', SYMS[key][1]);
+  }
+  function playReels(final, done) {
+    const reels = [...$('reels').children];
+    reels.forEach(r => r.classList.remove('win', 'stop'));
+    if (reduceMotion()) { final.forEach((k, i) => setReel(i, k)); done(); return; }
+    reels.forEach(r => r.classList.add('spin'));
+    const iv = setInterval(() => reels.forEach((r, i) => { if (r.classList.contains('spin')) setReel(i, SYM_KEYS[Math.floor(Math.random() * SYM_KEYS.length)]); }), 70);
+    [650, 1000, 1350].forEach((t, i) => setTimeout(() => {
+      reels[i].classList.remove('spin'); setReel(i, final[i]); reels[i].classList.add('stop');
+      if (i === 2) { clearInterval(iv); done(); }
+    }, t));
+  }
+  function spin() {
+    if (spinning) return;
+    const free = S.free > 0;
+    if (!free && S.coins < SPIN_COST) { $('slotMsg').textContent = 'Not enough coins. The house accepts discoveries.'; return; }
+    ecoHold = { coins: S.coins, tokens: S.tokens, reveals: S.reveals, free: S.free, boost: S.boost };
+    if (free) S.free--; else { S.coins -= SPIN_COST; S.spent += SPIN_COST; }
+    ecoHold.coins = S.coins; ecoHold.free = S.free;          // the cost shows at once; the prize waits for the reels
+    S.spins++;
+    const out = roll(), syms = reelsFor(out);
+    S.pity = out.k === 'loss' ? S.pity + 1 : 0;
+    const text = award(out);
+    save();                                                  // the result is already saved, so closing the page mid-spin loses nothing
+    spinning = true; $('slotMsg').textContent = 'Spinning...';
+    renderEco();
+    playReels(syms, () => {
+      spinning = false; ecoHold = null;
+      const reels = [...$('reels').children];
+      if (out.k !== 'loss') {
+        const counts = {}; syms.forEach(s => { counts[s] = (counts[s] || 0) + 1; });
+        reels.forEach((r, i) => { if (counts[syms[i]] >= 2) r.classList.add('win'); });
+      }
+      $('slotMsg').textContent = text;
+      renderEco();
+    });
+  }
+
+  const OFFERS = [
+    { k: 'token', n: 'Hint token', d: 'Buys one clue.', c: 45, ic: 'bulb' },
+    { k: 'reveal', n: 'Recipe reveal', d: 'Shows exactly what to combine.', c: 140, ic: 'key' },
+    { k: 'boost', n: 'Double payout', d: 'Your next discovery pays twice.', c: 90, ic: 'coin' }
+  ];
+  function buy(k) {
+    const o = OFFERS.find(x => x.k === k);
+    if (!o || spinning || S.coins < o.c) return;
+    S.coins -= o.c; S.spent += o.c;
+    if (k === 'token') S.tokens++; else if (k === 'reveal') S.reveals++; else S.boost++;
+    save(); renderEco();
+  }
+  function renderCasino() {
+    const e = eco();
+    $('czStats').innerHTML = [['coin', fmt(e.coins), 'Coins'], ['bulb', e.tokens, 'Hint tokens'], ['key', e.reveals, 'Recipe reveals'], ['cup', e.free, 'Free spins'], ['bug', e.boost ? e.boost + 'x2' : '0', 'Payout boosts']]
+      .map(s => '<span class="stat" title="' + s[2] + '">' + pxi(s[0]) + '<b>' + s[1] + '</b><em class="sl">' + s[2] + '</em></span>').join('');
+    const sp = $('spin');
+    sp.innerHTML = pxi('gem') + (e.free ? 'Free spin (' + e.free + ')' : 'Spin for ' + SPIN_COST + ' coins');
+    sp.disabled = spinning || (!e.free && e.coins < SPIN_COST);
+    $('czTally').textContent = fmt(S.spins) + ' spins, ' + fmt(S.won) + ' coins won back, ' + fmt(S.spent) + ' spent.';
+    $('czShop').innerHTML = OFFERS.map(o =>
+      '<div class="offer"><span class="oi">' + pxi(o.ic) + '</span><div><b>' + o.n + '</b><span>' + o.d + '</span></div><button class="btn" type="button" data-buy="' + o.k + '"' + (spinning || e.coins < o.c ? ' disabled' : '') + '>' + pxi('coin') + o.c + '</button></div>'
+    ).join('') + (e.reveals > 0 && !S.clue?.rev ? '<div class="offer"><span class="oi">' + pxi('key') + '</span><div><b>Use a recipe reveal</b><span>You have ' + e.reveals + '.</span></div><button class="btn primary" type="button" data-use="reveal"' + (spinning ? ' disabled' : '') + '>Use</button></div>' : '');
+    const owned = Object.keys(S.rare).sort((a, b) => S.rare[b] - S.rare[a] || EL.get(a).name.localeCompare(EL.get(b).name));
+    $('czColl').innerHTML = owned.length ? owned.map(id => {
+      const el = EL.get(id);
+      return '<div class="rtile" data-rare="' + S.rare[id] + '" style="--c:var(--c-' + el.cat + ')">' + badgeHTML(el) + '<span class="nm">' + esc(el.name) + '</span><span class="rtag">' + RARITY[S.rare[id]].n + '</span></div>';
+    }).join('') : '<p class="cz-note">Nothing yet. Three stars on the slots turns something you own into a special edition.</p>';
+  }
+  $('payList').innerHTML = PAYS.map(p => '<li>' + (p[0] ? pxi(p[0]) : '<span class="pxi"></span>') + '<b>' + p[1] + '</b><span>' + p[2] + '</span></li>').join('');
+  $('reels').innerHTML = '<div class="reel"></div><div class="reel"></div><div class="reel"></div>';
+  ['bug', 'coin', 'star'].forEach((k, i) => setReel(i, k));
+  casinoPane.addEventListener('click', e => {
+    if (e.target.closest('#spin')) { spin(); return; }
+    const b = e.target.closest('[data-buy]'); if (b) { buy(b.dataset.buy); return; }
+    if (e.target.closest('[data-use]')) useReveal();
   });
 
   /* ---------- field guide ---------- */
   function renderGuide() {
     const n = S.disc.length;
     $('g-rank').textContent = rankFor(n);
-    $('g-sum').textContent = n + ' of ' + TOTAL + ' discovered / ' + S.tries + ' combos tried / ' + S.fails + ' duds / ' + S.hints + ' hints';
+    $('g-sum').textContent = n + ' of ' + TOTAL + ' discovered / ' + S.tries + ' combos tried / ' + S.fails + ' duds / ' + S.hints + ' hints / ' + fmt(S.coins) + ' coins';
     const totals = {}, got = {};
     W.list.forEach(e => { totals[e.cat] = (totals[e.cat] || 0) + 1; });
     S.disc.forEach(id => { const c = EL.get(id).cat; got[c] = (got[c] || 0) + 1; });
@@ -2711,7 +3076,10 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     w.raw(toBits(o.disc)); w.raw(toBits(o.seen));
     w.vu(o.tries); w.vu(o.fails); w.vu(o.hints);
     w.u8(Math.max(0, SORTS.indexOf(o.sort)));
-    w.u8(withBoard ? 1 : 0);
+    w.u8((withBoard ? 1 : 0) | 2);                         // bit 0: workbench follows, bit 1: coins and inventory follow
+    w.vu(o.coins); w.vu(o.spent); w.vu(o.tokens); w.vu(o.reveals); w.vu(o.free); w.vu(o.boost); w.vu(o.spins); w.vu(o.pity); w.vu(o.won);
+    const rk = Object.keys(o.rare || {}).filter(id => IDX.has(id));
+    w.vu(rk.length); rk.forEach(id => { w.vu(IDX.get(id)); w.u8(o.rare[id]); });
     if (withBoard) {
       w.vi(o.view.x); w.vi(o.view.y); w.vu(Math.round(o.view.z * 1000));
       w.vu(o.board.length);
@@ -2737,7 +3105,13 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     o.disc.sort((a, b) => (SDEPTH[a] || 0) - (SDEPTH[b] || 0) || IDX.get(a) - IDX.get(b));
     o.tries = r.vu(); o.fails = r.vu(); o.hints = r.vu();
     o.sort = SORTS[r.u8()] || 'new';
-    const hasBoard = r.u8() === 1;
+    const fl = r.u8(), hasBoard = !!(fl & 1);
+    if (fl & 2) {                                          // codes made before coins existed stop here, and are paid out on import
+      o.coins = r.vu(); o.spent = r.vu(); o.tokens = r.vu(); o.reveals = r.vu(); o.free = r.vu(); o.boost = r.vu(); o.spins = r.vu(); o.pity = r.vu(); o.won = r.vu();
+      const nr = r.vu(); if (nr > N) throw new Error('That code is damaged.');
+      o.rare = {};
+      for (let i = 0; i < nr; i++) { const k = r.vu(), l = r.u8(); if (k >= N) throw new Error('That code is damaged.'); o.rare[W.list[k].id] = l; }
+    }
     o.board = []; o.notes = [];
     if (hasBoard) {
       o.view = { x: r.vi(), y: r.vi(), z: r.vu() / 1000 };
@@ -2799,6 +3173,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       clampAll();
     } else if (S.disc.length <= STARTERS.length) seedBoard();
     (f.notes || []).forEach(o => { if (o.k === 'b') makeBox(o.x, o.y, o.w, o.h, o.c); else makeText(o.x, o.y, o.t, o.c); });
+    clueHidden = false; spinning = false; ecoHold = null;
     refreshAll(); if (view === 'tree') renderTree();
     save();
   }
@@ -2827,6 +3202,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
   }
   async function fillExport() {
     const seq = ++saveSeq, out = $('svOut'), msg = $('svMsg');
+    out.value = ''; msg.textContent = '';
     try {
       const code = await makeCode($('svBoard').checked);
       if (seq !== saveSeq || !out.isConnected) return;
@@ -2841,7 +3217,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       if (seq !== saveSeq) return;
       savePending = r;
       const f = r.f, nTiles = f.board.length, nBoxes = f.notes.filter(n => n.k === 'b').length, nText = f.notes.length - nBoxes;
-      msg.textContent = 'Valid. ' + rankFor(f.disc.length) + ': ' + f.disc.length + ' of ' + TOTAL + ' discovered, ' + f.tries + ' combos tried' +
+      msg.textContent = 'Valid. ' + rankFor(f.disc.length) + ': ' + f.disc.length + ' of ' + TOTAL + ' discovered, ' + f.tries + ' combos tried, ' + fmt(f.coins) + ' coins' + (f.prorated ? ' (worked out from your discoveries)' : '') +
         (r.hasBoard ? ', workbench with ' + nTiles + ' tile' + (nTiles === 1 ? '' : 's') + ', ' + nBoxes + ' box' + (nBoxes === 1 ? '' : 'es') + ' and ' + nText + ' text.' : ', no workbench.');
       conf.hidden = false;
       conf.innerHTML = '<span>This replaces your current progress (' + S.disc.length + ' discovered) in this browser.</span><button class="btn danger" type="button" data-sv="apply">Replace my progress</button><button class="btn" type="button" data-sv="close">Keep what I have</button>';
@@ -2875,7 +3251,8 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
 
   /* ---------- icons on the controls ---------- */
   function decorate() {
-    $('hint').innerHTML = pxi('bulb') + '<span class="lbl">Hint</span>';
+    $('hint').innerHTML = pxi('bulb') + '<span class="lbl">Hint</span><span class="tk" id="hintCt">0</span>';
+    $('tabCasino').innerHTML = pxi('coin') + 'Casino';
     $('guideBtn').innerHTML = pxi('doc') + '<span class="lbl">Field guide</span>';
     $('clear').innerHTML = pxi('cross') + '<span class="lbl">Clear board</span>';
     $('tabBench').innerHTML = pxi('flask') + 'Workbench';
@@ -3052,16 +3429,19 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     view = v;
     board.hidden = v !== 'bench';
     treePane.hidden = v !== 'tree';
+    casinoPane.hidden = v !== 'casino';
+    $('tabCasino').setAttribute('aria-selected', v === 'casino');
     $('tabBench').setAttribute('aria-selected', v === 'bench');
     $('tabTree').setAttribute('aria-selected', v === 'tree');
     $('trayNote').hidden = v !== 'tree';
     tray.classList.toggle('treemode', v === 'tree');
     toolsEl.hidden = v !== 'bench';
-    if (v === 'tree') renderTree(); else clampAll();
+    if (v === 'tree') renderTree(); else if (v === 'casino') renderCasino(); else clampAll();
   }
 
   $('tabBench').addEventListener('click', () => setView('bench'));
   $('tabTree').addEventListener('click', () => setView('tree'));
+  $('tabCasino').addEventListener('click', () => setView('casino'));
   $('tmAnc').addEventListener('click', () => { treeMode = 'anc'; renderTree(); });
   $('tmTier').addEventListener('click', () => { treeMode = 'tier'; renderTree(); });
   $('treeBack').addEventListener('click', () => { const id = treeHist.pop(); if (id) { treeSel = id; treeMode = 'anc'; renderTree(); } });
@@ -3084,7 +3464,8 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     const ing = x => { const n = EL.get(x); return '<span class="ing" style="--c:var(--c-' + n.cat + ')">' + badgeHTML(n) + esc(n.name) + '</span>'; };
     return '<div class="t-head"><b>' + esc(e.name) + '</b><span class="t-cat">' + esc(CAT_NAME[e.cat]) + '</span></div>' +
       '<div class="t-recipe">' + (r ? ing(r[0]) + '<span class="plus">+</span>' + ing(r[1]) : '<span>Starting element</span>') + '</div>' +
-      '<div class="t-flavor">' + esc(e.flavor) + '</div>';
+      '<div class="t-flavor">' + esc(e.flavor) + '</div>' +
+      (rareOf(id) ? '<div class="t-rare" data-rare="' + rareOf(id) + '">' + esc(RARITY[rareOf(id)].n) + ' edition. Discoveries made with it pay ' + (rareOf(id) * 25) + '% more.</div>' : '');
   }
   function showTip(el) {
     const id = tipIdOf(el);
