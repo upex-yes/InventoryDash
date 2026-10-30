@@ -355,17 +355,80 @@ button { font: inherit; color: inherit; }
 @media (min-width: 1100px) { .stat .sl { display: inline; } }
 .cz-grid { display: grid; grid-template-columns: minmax(0, 1.1fr) minmax(0, 1fr); gap: 16px; align-items: start; }
 @media (max-width: 900px) { .cz-grid { grid-template-columns: minmax(0, 1fr); } }
-.slot { display: grid; gap: 12px; padding: 14px; border-radius: 16px; border: 2px solid var(--line); background: color-mix(in srgb, var(--c-ai) 9%, var(--raise)); }
-.reels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 10px; }
-.reel { height: clamp(86px, 16vw, 128px); display: grid; place-items: center; border-radius: 12px; border: 2px solid var(--ink2); background: var(--panel); overflow: hidden; }
+/* ---- the slot machine: a pixel-art cabinet. Notched corners come from hard box-shadows, never blur. ---- */
+.slot { display: grid; gap: 12px; padding: 14px 10px 14px; border-radius: 16px; border: 2px solid var(--line); background: color-mix(in srgb, var(--c-ai) 9%, var(--raise)); --px-k: #14161f; }
+.machine { --ol: #14161f; --red: #c4263f; --red-d: #7d1428; --gold: #ffd23f; --gold-d: #c98a00; --off: #3a1620;
+  display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 4px; align-items: center; padding: 6px 0; }
+.cab { position: relative; background: var(--red); margin: 6px; padding: 44px 30px 16px; display: grid; gap: 12px;
+  box-shadow: 0 -6px 0 var(--ol), 0 6px 0 var(--ol), -6px 0 0 var(--ol), 6px 0 0 var(--ol), inset 0 0 0 4px var(--gold), inset 0 0 0 8px var(--red-d); }
+.cab.kick { transform: translateY(3px); }
+.sign { position: absolute; left: 0; right: 0; top: 17px; text-align: center; font: 800 13px/1 var(--f-mono); letter-spacing: .22em; color: var(--gold); text-shadow: 2px 2px 0 var(--red-d); display: flex; justify-content: center; align-items: center; gap: 8px; animation: signblink 1.6s steps(1) infinite; }
+.sign .pxi { width: 12px; height: 12px; }
+@keyframes signblink { 0%, 70% { color: var(--gold); } 71%, 85% { color: #fff; } 86%, 100% { color: var(--gold); } }
+
+.bulbs { position: absolute; display: flex; justify-content: space-between; }
+.bulbs.bt, .bulbs.bb { left: 14px; right: 14px; height: 8px; }
+.bulbs.bt { top: 12px; } .bulbs.bb { bottom: 12px; }
+.bulbs.bl, .bulbs.br { top: 30px; bottom: 30px; width: 8px; flex-direction: column; }
+.bulbs.bl { left: 14px; } .bulbs.br { right: 14px; }
+.bulb { width: 8px; height: 8px; background: var(--off); animation: bulb 1.2s steps(1) infinite; animation-delay: calc((var(--i) % 2) * -.6s); }
+@keyframes bulb { 0%, 49% { background: var(--b); } 50%, 100% { background: var(--off); } }
+.machine.is-spin .bulb { animation: bulb .5s steps(1) infinite; animation-delay: calc(var(--i) * -.04s); }
+.machine.is-win .bulb { animation: bulbwin .24s steps(1) infinite; animation-delay: 0s; }
+@keyframes bulbwin { 0% { background: var(--gold); } 50% { background: #fff; } }
+.machine.is-jackpot .bulb { animation: bulbjack .6s steps(1) infinite; animation-delay: calc(var(--i) * -.05s); }
+@keyframes bulbjack { 0% { background: #ff4d8d; } 17% { background: #ffd23f; } 34% { background: #3ddc84; } 51% { background: #35d0e0; } 68% { background: #4ea8ff; } 85% { background: #a66cff; } }
+.machine.is-win .sign, .machine.is-jackpot .sign { animation: signwin .24s steps(1) infinite; }
+@keyframes signwin { 0% { color: #fff; } 50% { color: var(--gold); } }
+
+.window { position: relative; background: var(--ol); padding: 8px; margin: 4px;
+  box-shadow: 0 -4px 0 var(--gold), 0 4px 0 var(--gold), -4px 0 0 var(--gold), 4px 0 0 var(--gold), 0 -8px 0 var(--ol), 0 8px 0 var(--ol), -8px 0 0 var(--ol), 8px 0 0 var(--ol); }
+.reels { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; }
+.reel { height: clamp(78px, 13vw, 112px); display: grid; place-items: center; overflow: hidden; border: 0; border-radius: 0;
+  background: linear-gradient(#bdb392, #f4eedb 24%, #f4eedb 76%, #bdb392); box-shadow: inset 0 0 0 3px #d9cfae; }
 .reel .pxi { width: 54%; height: 54%; max-width: 72px; max-height: 72px; }
-.reel.spin .pxi { animation: reelshake .14s linear infinite; }
+.reel.spin .pxi { animation: reelshake .12s linear infinite; }
 .reel.stop { animation: drop .3s cubic-bezier(.2, 1.3, .4, 1); }
-.reel.win { border-color: var(--accent); background: color-mix(in srgb, var(--accent) 14%, var(--panel)); }
+.reel.win { background: linear-gradient(#e0b400, #fff3b0 24%, #fff3b0 76%, #e0b400); animation: reelwin .3s steps(1) infinite; }
+@keyframes reelwin { 0% { box-shadow: inset 0 0 0 3px #ff4d8d; } 50% { box-shadow: inset 0 0 0 3px #fff; } }
 @keyframes reelshake { 0% { transform: translateY(-9px); } 50% { transform: translateY(9px); } 100% { transform: translateY(-9px); } }
 @keyframes bump { 0% { transform: scale(1); } 35% { transform: scale(1.14); } 100% { transform: scale(1); } }
-.spinbtn { justify-content: center; padding: 11px 14px; font-size: 15px; }
-.spinbtn .pxi { width: 18px; height: 18px; }
+.payline { position: absolute; left: 0; right: 0; top: 50%; height: 3px; margin-top: -1px; background: #ef476f; opacity: .85; pointer-events: none; }
+.payline::before, .payline::after { content: ""; position: absolute; top: -4px; border: 5.5px solid transparent; }
+.payline::before { left: -11px; border-left-color: #ef476f; border-right-width: 0; border-top-width: 5.5px; }
+.payline::after { right: -11px; border-right-color: #ef476f; border-left-width: 0; }
+
+.coinslot { display: grid; padding: 8px; background: var(--red-d); box-shadow: 0 -3px 0 var(--ol), 0 3px 0 var(--ol), -3px 0 0 var(--ol), 3px 0 0 var(--ol); }
+.btn.spinbtn { justify-content: center; padding: 9px 10px; font-size: 14px; border-radius: 0; border: 0; background: var(--gold); color: #14161f; font-weight: 800; letter-spacing: .02em;
+  box-shadow: 0 -3px 0 var(--ol), 0 3px 0 var(--ol), -3px 0 0 var(--ol), 3px 0 0 var(--ol), inset 0 -4px 0 var(--gold-d); }
+.btn.spinbtn:hover { background: #ffe27a; border: 0; }
+.btn.spinbtn:active:not(:disabled) { transform: translateY(2px); }
+.btn.spinbtn:disabled { background: #b9a76a; opacity: 1; box-shadow: 0 -3px 0 var(--ol), 0 3px 0 var(--ol), -3px 0 0 var(--ol), 3px 0 0 var(--ol); }
+.spinbtn .pxi { width: 16px; height: 16px; }
+
+/* the lever: a pivot on the cabinet, an arm that swings through an arc, and a ball you drag down */
+.lever { position: relative; width: 96px; height: 236px; touch-action: none; user-select: none; -webkit-user-select: none; cursor: grab; --px-k: #14161f; outline-offset: 2px; }
+.lever.dragging { cursor: grabbing; }
+.lever.locked { cursor: not-allowed; opacity: .75; }
+.lever:focus-visible { outline: 2px solid var(--accent); }
+.l-base { position: absolute; left: 0; top: 104px; width: 16px; height: 28px; background: var(--red-d);
+  box-shadow: 0 -3px 0 var(--ol), 0 3px 0 var(--ol), -3px 0 0 var(--ol), 3px 0 0 var(--ol), inset 0 0 0 3px var(--red); }
+.l-arm { position: absolute; left: 14px; top: 114px; width: 62px; height: 8px; transform-origin: 0 50%; transform: rotate(-64deg); background: #dfe5f2;
+  box-shadow: 0 -2px 0 var(--ol), 0 2px 0 var(--ol), inset 0 -3px 0 #8d97b0; }
+.l-ball { position: absolute; width: 34px; height: 34px; }
+.l-ball .pxi { width: 100%; height: 100%; }
+.l-tip { position: absolute; left: 0; right: 0; bottom: 0; text-align: center; font: 800 10px var(--f-mono); letter-spacing: .2em; color: var(--ink2); }
+.lever.fired .l-tip { color: var(--accent); }
+.lever.anim .l-arm { transition: transform .22s cubic-bezier(.5, 0, .9, .6); }
+.lever.anim .l-ball { transition: left .22s cubic-bezier(.5, 0, .9, .6), top .22s cubic-bezier(.5, 0, .9, .6); }
+.lever.back .l-arm { transition: transform .42s cubic-bezier(.3, 1.5, .5, 1); }
+.lever.back .l-ball { transition: left .42s cubic-bezier(.3, 1.5, .5, 1), top .42s cubic-bezier(.3, 1.5, .5, 1); }
+@media (max-width: 520px) {
+  .cab { padding: 42px 24px 14px; }
+  .machine { grid-template-columns: minmax(0, 1fr) 92px; }
+  .sign { letter-spacing: .12em; font-size: 11px; }
+  .btn.spinbtn { font-size: 12.5px; padding: 9px 6px; }
+}
 .slot-msg { margin: 0; min-height: 2.8em; font: 600 13px/1.4 var(--f-mono); color: var(--ink); }
 .cz-note { margin: 0; font: 500 12px/1.45 var(--f-mono); color: var(--ink2); }
 .pay summary { cursor: pointer; font: 700 11px var(--f-mono); letter-spacing: .08em; text-transform: uppercase; color: var(--ink2); }
@@ -403,6 +466,9 @@ button { font: inherit; color: inherit; }
 @media (prefers-reduced-motion: reduce) {
   .on-board.pop, .on-board.shake, .card, .items .chip.hinted, .status.flash, .chip[data-rare]::before, .coinpill.bump, .reel.stop { animation: none; }
   .reel.spin .pxi { animation: none; }
+  .bulb, .sign, .machine.is-win .bulb, .machine.is-jackpot .bulb, .machine.is-spin .bulb { animation: none !important; background: var(--b); }
+  .bulb:nth-child(even) { background: #3a1620 !important; }
+  .lever.anim .l-arm, .lever.anim .l-ball { transition: none; }
   .bar > i { transition: none; }
 }
 </style>
@@ -477,9 +543,29 @@ button { font: inherit; color: inherit; }
       </div>
       <div class="cz-grid">
         <div class="slot">
-          <div class="reels" id="reels" role="img" aria-label="Slot machine reels"></div>
-          <button class="btn primary spinbtn" id="spin" type="button"></button>
-          <p class="slot-msg" id="slotMsg" role="status" aria-live="polite">Pull the lever. Three of a kind wins something.</p>
+          <div class="machine" id="machine">
+            <div class="cab" id="cab">
+              <div class="bulbs bt" id="bulbsT" aria-hidden="true"></div>
+              <div class="bulbs bb" id="bulbsB" aria-hidden="true"></div>
+              <div class="bulbs bl" id="bulbsL" aria-hidden="true"></div>
+              <div class="bulbs br" id="bulbsR" aria-hidden="true"></div>
+              <div class="sign" id="sign" aria-hidden="true"></div>
+              <div class="window">
+                <div class="reels" id="reels" role="img" aria-label="Slot machine reels"></div>
+                <div class="payline" aria-hidden="true"></div>
+              </div>
+              <div class="coinslot">
+                <button class="btn primary spinbtn" id="spin" type="button"></button>
+              </div>
+            </div>
+            <div class="lever" id="lever" role="slider" tabindex="0" aria-label="Lever. Drag it all the way down to spin, or press Enter." aria-orientation="vertical" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0">
+              <div class="l-base"></div>
+              <div class="l-arm" id="lArm"></div>
+              <div class="l-ball" id="lBall"></div>
+              <div class="l-tip" aria-hidden="true">PULL</div>
+            </div>
+          </div>
+          <p class="slot-msg" id="slotMsg" role="status" aria-live="polite">Pull the lever all the way down. Three of a kind wins something.</p>
           <p class="cz-note" id="czTally"></p>
           <details class="pay"><summary>Paytable</summary><ul id="payList"></ul></details>
         </div>
@@ -1510,6 +1596,17 @@ kkkkkkkk
 .kaaaak.
 kaaaaaak
 .k....k.`);
+
+sp('ball', `
+..kkkkk..
+.krrrrrk.
+krwwrrrrk
+krwrrrrrk
+krrrrrrrk
+krrrrrrok
+krrrrrook
+.koooook.
+..kkkkk..`);
 
 /* ---------- Icon mapping and rendering ---------- */
 const LANG_COLOR = {
@@ -2899,9 +2996,9 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     }, t));
   }
   function spin() {
-    if (spinning) return;
+    if (spinning) return false;
     const free = S.free > 0;
-    if (!free && S.coins < SPIN_COST) { $('slotMsg').textContent = 'Not enough coins. The house accepts discoveries.'; return; }
+    if (!free && S.coins < SPIN_COST) { $('slotMsg').textContent = 'Not enough coins. The house accepts discoveries.'; return false; }
     ecoHold = { coins: S.coins, tokens: S.tokens, reveals: S.reveals, free: S.free, boost: S.boost };
     if (free) S.free--; else { S.coins -= SPIN_COST; S.spent += SPIN_COST; }
     ecoHold.coins = S.coins; ecoHold.free = S.free;          // the cost shows at once; the prize waits for the reels
@@ -2911,6 +3008,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     const text = award(out);
     save();                                                  // the result is already saved, so closing the page mid-spin loses nothing
     spinning = true; $('slotMsg').textContent = 'Spinning...';
+    setLights('is-spin');
     renderEco();
     playReels(syms, () => {
       spinning = false; ecoHold = null;
@@ -2920,8 +3018,10 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
         reels.forEach((r, i) => { if (counts[syms[i]] >= 2) r.classList.add('win'); });
       }
       $('slotMsg').textContent = text;
+      setLights(out.k === 'jackpot' ? 'is-jackpot' : out.k === 'loss' ? '' : 'is-win', out.k === 'jackpot' ? 4200 : 2400);
       renderEco();
     });
+    return true;
   }
 
   const OFFERS = [
@@ -2943,6 +3043,8 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
     const sp = $('spin');
     sp.innerHTML = pxi('gem') + (e.free ? 'Free spin (' + e.free + ')' : 'Spin for ' + SPIN_COST + ' coins');
     sp.disabled = spinning || (!e.free && e.coins < SPIN_COST);
+    $('lever').classList.toggle('locked', spinning);
+    $('lever').setAttribute('aria-disabled', spinning);
     $('czTally').textContent = fmt(S.spins) + ' spins, ' + fmt(S.won) + ' coins won back, ' + fmt(S.spent) + ' spent.';
     $('czShop').innerHTML = OFFERS.map(o =>
       '<div class="offer"><span class="oi">' + pxi(o.ic) + '</span><div><b>' + o.n + '</b><span>' + o.d + '</span></div><button class="btn" type="button" data-buy="' + o.k + '"' + (spinning || e.coins < o.c ? ' disabled' : '') + '>' + pxi('coin') + o.c + '</button></div>'
@@ -2953,11 +3055,94 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       return '<div class="rtile" data-rare="' + S.rare[id] + '" style="--c:var(--c-' + el.cat + ')">' + badgeHTML(el) + '<span class="nm">' + esc(el.name) + '</span><span class="rtag">' + RARITY[S.rare[id]].n + '</span></div>';
     }).join('') : '<p class="cz-note">Nothing yet. Three stars on the slots turns something you own into a special edition.</p>';
   }
+    /* ---- the machine: marquee lights and a lever you have to drag all the way down ---- */
+  const machine = $('machine'), lever = $('lever'), lArm = $('lArm'), lBall = $('lBall'), cab = $('cab');
+  const L_PX = 14, L_PY = 118, L_LEN = 62, A_MIN = -64, A_MAX = 64, A_STEP = 4;   // pivot, arm length and swing, in px and degrees
+  const BULB_COLORS = ['#ffd23f', '#35d0e0', '#ffffff', '#ff4d8d'];
+  (function buildLights() {
+    let n = 0;
+    const row = (id, count) => { $(id).innerHTML = Array.from({ length: count }, () => '<span class="bulb" style="--i:' + n + ';--b:' + BULB_COLORS[n++ % BULB_COLORS.length] + '"></span>').join(''); };
+    row('bulbsT', 12); row('bulbsR', 7); row('bulbsB', 12); row('bulbsL', 7);
+    $('sign').innerHTML = pxi('star') + 'MERGE SLOTS' + pxi('star');
+    lBall.innerHTML = pxi('ball');
+  })();
+  let lightTimer = 0;
+  function setLights(state, ms) {
+    clearTimeout(lightTimer);
+    machine.classList.remove('is-spin', 'is-win', 'is-jackpot');
+    if (state) machine.classList.add(state);
+    if (state && state !== 'is-spin' && ms) lightTimer = setTimeout(() => machine.classList.remove(state), ms);
+  }
+  let leverAngle = A_MIN, leverDrag = null, leverTimer = 0;
+  function setLever(a) {
+    leverAngle = a;
+    lArm.style.transform = 'rotate(' + a + 'deg)';
+    const r = a * Math.PI / 180;
+    lBall.style.left = (L_PX + L_LEN * Math.cos(r) - 17) + 'px';
+    lBall.style.top = (L_PY + L_LEN * Math.sin(r) - 17) + 'px';
+    lever.setAttribute('aria-valuenow', Math.round((a - A_MIN) / (A_MAX - A_MIN) * 100));
+  }
+  function springBack() {
+    lever.classList.remove('dragging', 'anim');
+    lever.classList.add('back');
+    setLever(A_MIN);
+    clearTimeout(leverTimer);
+    leverTimer = setTimeout(() => lever.classList.remove('back', 'fired'), 480);
+  }
+  function kick() { cab.classList.add('kick'); setTimeout(() => cab.classList.remove('kick'), 140); }
+  // the lever swings down and back by itself (used by the button and the keyboard)
+  function autoPull() {
+    if (leverDrag || reduceMotion()) { kick(); return; }
+    clearTimeout(leverTimer);
+    lever.classList.remove('back'); lever.classList.add('anim');
+    setLever(A_MAX); kick();
+    leverTimer = setTimeout(springBack, 240);
+  }
+  function leverAngleFor(e) {
+    const r = lever.getBoundingClientRect();
+    const dx = e.clientX - r.left - L_PX, dy = e.clientY - r.top - L_PY;
+    const a = Math.atan2(dy, Math.max(dx, 12)) * 180 / Math.PI;
+    return Math.round(clamp(a, A_MIN, A_MAX) / A_STEP) * A_STEP;
+  }
+  lever.addEventListener('pointerdown', e => {
+    if (e.button > 0 || spinning || lever.classList.contains('locked')) return;
+    e.preventDefault();
+    clearTimeout(leverTimer);
+    leverDrag = { pid: e.pointerId, fired: false };
+    lever.classList.remove('back', 'anim', 'fired'); lever.classList.add('dragging');
+    try { lever.setPointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    setLever(leverAngleFor(e));
+  });
+  lever.addEventListener('pointermove', e => {
+    if (!leverDrag || e.pointerId !== leverDrag.pid) return;
+    const a = leverAngleFor(e);
+    if (leverDrag.fired) return;                          // once it has hit the bottom it stays there until you let go
+    setLever(a);
+    if (a >= A_MAX) {                                     // all the way down: the machine takes the coin
+      leverDrag.fired = true; lever.classList.add('fired'); kick();
+      if (!spin()) leverDrag.fired = false;
+    }
+  });
+  const leverUp = e => {
+    if (!leverDrag || e.pointerId !== leverDrag.pid) return;
+    const fired = leverDrag.fired, progress = (leverAngle - A_MIN) / (A_MAX - A_MIN);
+    leverDrag = null;
+    try { lever.releasePointerCapture(e.pointerId); } catch (err) { /* ignore */ }
+    springBack();
+    if (!fired && progress > 0.25 && progress < 1 && !spinning) $('slotMsg').textContent = 'Not far enough. Pull it all the way down.';
+  };
+  lever.addEventListener('pointerup', leverUp);
+  lever.addEventListener('pointercancel', leverUp);
+  lever.addEventListener('keydown', e => {
+    if (e.key === 'Enter' || e.key === ' ' || e.key === 'ArrowDown') { e.preventDefault(); if (!spinning && spin()) autoPull(); }
+  });
+  setLever(A_MIN);
+
   $('payList').innerHTML = PAYS.map(p => '<li>' + (p[0] ? pxi(p[0]) : '<span class="pxi"></span>') + '<b>' + p[1] + '</b><span>' + p[2] + '</span></li>').join('');
   $('reels').innerHTML = '<div class="reel"></div><div class="reel"></div><div class="reel"></div>';
   ['bug', 'coin', 'star'].forEach((k, i) => setReel(i, k));
   casinoPane.addEventListener('click', e => {
-    if (e.target.closest('#spin')) { spin(); return; }
+    if (e.target.closest('#spin')) { if (spin()) autoPull(); return; }
     const b = e.target.closest('[data-buy]'); if (b) { buy(b.dataset.buy); return; }
     if (e.target.closest('[data-use]')) useReveal();
   });
@@ -3173,7 +3358,7 @@ const CAT_ICON = { core: 'chip', lang: 'cart', people: 'person', eng: 'r_dev', s
       clampAll();
     } else if (S.disc.length <= STARTERS.length) seedBoard();
     (f.notes || []).forEach(o => { if (o.k === 'b') makeBox(o.x, o.y, o.w, o.h, o.c); else makeText(o.x, o.y, o.t, o.c); });
-    clueHidden = false; spinning = false; ecoHold = null;
+    clueHidden = false; spinning = false; ecoHold = null; setLights('');
     refreshAll(); if (view === 'tree') renderTree();
     save();
   }
